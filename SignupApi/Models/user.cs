@@ -1,19 +1,29 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SignupApi.Models
+namespace SignupApi.Models;
+
+[Table("User")]
+public class User
 {
-    public class User
-    {
-        public int Id { get; set; }
+    [Key]
+    [StringLength(13)]
+    public string Id { get; set; } = string.Empty; // 13-digit SA ID
 
-        public string CardNumber { get; set; } = string.Empty;
+    [Required]
+    [StringLength(100)]
+    public string FullName { get; set; } = string.Empty;
 
-        public string FullName { get; set; } = string.Empty;
+    [Required]
+    [EmailAddress]
+    [StringLength(150)]
+    public string Email { get; set; } = string.Empty;
 
-        public string Email { get; set; } = string.Empty;
+    [StringLength(255)]
+    public string? PasswordHash { get; set; }
 
-        public string PasswordHash { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime RegisteredAt { get; set; } = DateTime.Now;
-    }
+    // Navigation property
+    public BusCard? BusCard { get; set; }
 }

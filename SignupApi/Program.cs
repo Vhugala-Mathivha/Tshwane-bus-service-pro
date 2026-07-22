@@ -1,38 +1,40 @@
 using Microsoft.EntityFrameworkCore;
-using SignupApi.Data;
+using SignupApi.data; // Lowercase 'data'
+using SignupApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// 1. Add Controllers & OpenAPI/Swagger
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Signup Database
+// 2. Configure MySQL Database Connection for tshwane_bus_db
+var connectionString = "Server=localhost;Port=3306;Database=tshwane_bus_db;User=root;Password=;";
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMySql(
-        "Server=localhost;Port=3306;Database=signupdb;User=root;Password=;",
-        ServerVersion.AutoDetect("Server=localhost;Port=3306;Database=signupdb;User=root;Password=;"));
+        connectionString,
+        ServerVersion.AutoDetect(connectionString)
+    );
 });
 
-// Tshwane Database
-builder.Services.AddDbContext<TshwaneDbContext>(options =>
-{
-    options.UseMySql(
-        "Server=localhost;Port=3306;Database=tshwane_db;User=root;Password=;",
-        ServerVersion.AutoDetect("Server=localhost;Port=3306;Database=tshwane_db;User=root;Password=;"));
-});
+// 3. Register Application Services for Dependency Injection (Fixes AuthController errors)
+builder.Services.AddScoped<OtpService>();
+builder.Services.AddScoped<EmailServices>(); // Matches EmailServices in AuthController constructor
 
 var app = builder.Build();
 
-// Configure HTTP pipeline
-app.UseSwagger();
-app.UseSwaggerUI();
+// 4. Configure HTTP Request Pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
+app.UseHttpsRedirection();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
