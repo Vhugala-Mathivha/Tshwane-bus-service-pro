@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { registerUser } from '../services/api'
 
 function Register() {
   const navigate = useNavigate()
@@ -67,13 +68,15 @@ function Register() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
-    localStorage.setItem('userName', formData.fullName)
-    localStorage.setItem('cardNumber', formData.cardNumber)
-    localStorage.setItem('balance', '50.00')
-    navigate('/verify')
+    try {
+      await registerUser(formData)
+      navigate('/dashboard')
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, general: error.message }))
+    }
   }
 
   return (
@@ -173,6 +176,8 @@ function Register() {
             </label>
             {errors.agreeTerms && <div className="error-message">{errors.agreeTerms}</div>}
           </div>
+
+          {errors.general && <div className="error-message">{errors.general}</div>}
 
           <button type="submit" className="btn-green">
             Register

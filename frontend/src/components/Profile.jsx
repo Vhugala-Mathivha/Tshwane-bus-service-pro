@@ -1,17 +1,37 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { getCardBalance, getStoredCardNumber, getStoredUser, logoutUser } from '../services/api'
 
 function Profile() {
   const navigate = useNavigate()
-  const userName = localStorage.getItem('userName') || 'User'
-  const balance = localStorage.getItem('balance') || '250.00'
-  const cardNumber = localStorage.getItem('cardNumber') || '255588773327'
+  const storedUser = getStoredUser()
+  const [userName, setUserName] = useState(storedUser?.fullName || localStorage.getItem('userName') || 'User')
+  const [email, setEmail] = useState(storedUser?.email || localStorage.getItem('user_email') || 'User@gmail.com')
+  const [balance, setBalance] = useState(localStorage.getItem('balance') || '250.00')
+  const [cardNumber, setCardNumber] = useState(getStoredCardNumber() || '255588773327')
+
+  useEffect(() => {
+    const syncProfile = async () => {
+      try {
+        const balanceResponse = await getCardBalance()
+        setBalance(balanceResponse.balance.toString())
+        setCardNumber(balanceResponse.cardNumber)
+        setUserName(storedUser?.fullName || localStorage.getItem('userName') || 'User')
+        setEmail(storedUser?.email || localStorage.getItem('user_email') || 'User@gmail.com')
+        localStorage.setItem('balance', balanceResponse.balance.toString())
+        localStorage.setItem('user_balance', balanceResponse.balance.toString())
+        localStorage.setItem('cardNumber', balanceResponse.cardNumber)
+        localStorage.setItem('user_card_number', balanceResponse.cardNumber)
+      } catch (error) {
+        console.error('Unable to sync profile balance:', error)
+      }
+    }
+
+    syncProfile()
+  }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('userName')
-    localStorage.removeItem('cardNumber')
-    localStorage.removeItem('balance')
+    logoutUser()
     navigate('/')
   }
 
@@ -62,7 +82,7 @@ function Profile() {
           </div>
           <div className="info-item">
             <span className="info-label">Email Address</span>
-            <span className="info-value">User@gmail.com</span>
+            <span className="info-value">{email}</span>
           </div>
           <div className="info-item">
             <span className="info-label">ID NUmberr</span>

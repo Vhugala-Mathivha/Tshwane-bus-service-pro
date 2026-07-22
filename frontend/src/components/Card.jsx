@@ -1,9 +1,27 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { getCardBalance, getStoredCardNumber, getStoredUser } from '../services/api'
 
 function Card() {
-  const userName = localStorage.getItem('userName') || 'User'
-  const cardNumber = localStorage.getItem('cardNumber') || '23246859026752'
+  const storedUser = getStoredUser()
+  const [userName, setUserName] = useState(storedUser?.fullName || localStorage.getItem('userName') || 'User')
+  const [cardNumber, setCardNumber] = useState(getStoredCardNumber() || '23246859026752')
+
+  useEffect(() => {
+    const syncCard = async () => {
+      try {
+        const response = await getCardBalance()
+        setCardNumber(response.cardNumber)
+        setUserName(storedUser?.fullName || localStorage.getItem('userName') || 'User')
+        localStorage.setItem('cardNumber', response.cardNumber)
+        localStorage.setItem('user_card_number', response.cardNumber)
+      } catch (error) {
+        console.error('Unable to sync card details:', error)
+      }
+    }
+
+    syncCard()
+  }, [])
 
   // Format card number with spaces every 4 digits
   const formatCardNumber = (num) => {

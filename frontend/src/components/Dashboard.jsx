@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import axios from 'axios'
+import { getCardBalance, getUserName, logoutUser, verifyPaystackPayment } from '../services/api'
 
 function getTimeOfDayGreeting() {
   const currentHour = new Date().getHours()
@@ -15,48 +15,60 @@ function Dashboard() {
   
   // Logic: Initialize from localStorage, but update via State
   const [balance, setBalance] = useState(localStorage.getItem('balance') || '0.00')
-  const [userName] = useState(localStorage.getItem('userName') || 'User')
+  const [userName] = useState(getUserName())
+  const [paymentStatus, setPaymentStatus] = useState('')
 
   useEffect(() => {
-    // 1. Check if we just arrived from Paystack (URL contains ?reference=...)
-    const queryParams = new URLSearchParams(location.search);
-    const reference = queryParams.get('reference');
+    // Check if this is a redirect from Paystack
+    const queryParams = new URLSearchParams(location.search)
+    const paystackReference = queryParams.get('reference') || queryParams.get('trxref')
+    const pendingReference = localStorage.getItem('pending_payment_reference')
 
-    if (reference) {
-      const verifyPaymentInDatabase = async () => {
-        try {
-          // Call your ASP.NET Core 9 Backend Verify Endpoint
-          const response = await axios.get(`http://localhost:5013/api/payment/verify/${reference}`);
-          
-          if (response.data.status === "Success") {
-            // 2. Update UI with the REAL balance from MySQL
-            const newBalance = response.data.newBalance;
-            setBalance(newBalance.toString());
-            
-            // 3. Keep localStorage in sync
-            localStorage.setItem('balance', newBalance.toString());
-            
-            alert("Top-up Successful!");
-
-            // 4. Clean the URL so it doesn't try to verify again on refresh
-            navigate('/dashboard', { replace: true });
-          }
-        } catch (error) {
-          console.error("Payment verification failed:", error);
-          alert("We couldn't verify your payment. Please check your transaction history.");
+    const handlePaystackCallback = async (reference) => {
+      try {
+        const result = await verifyPaystackPayment(reference)
+        if (result.status === 'Success') {
+          // Update balance with the new balance from the server
+          setBalance(result.newBalance.toString())
+          localStorage.setItem('balance', result.newBalance.toString())
+          localStorage.setItem('user_balance', result.newBalance.toString())
+          setPaymentStatus('Payment successful! Funds have been loaded.')
         }
-      };
-
-      verifyPaymentInDatabase();
+      } catch (error) {
+        console.error('Payment verification failed:', error)
+        setPaymentStatus('Payment verification failed. Please contact support.')
+      } finally {
+        localStorage.removeItem('pending_payment_reference')
+        // Clean up the URL query params
+        window.history.replaceState({}, document.title, '/dashboard')
+      }
     }
-  }, [location, navigate]);
+
+    const syncBalance = async () => {
+      try {
+        const response = await getCardBalance()
+        setBalance(response.balance.toString())
+        localStorage.setItem('balance', response.balance.toString())
+        localStorage.setItem('user_balance', response.balance.toString())
+        localStorage.setItem('cardNumber', response.cardNumber)
+        localStorage.setItem('user_card_number', response.cardNumber)
+      } catch (error) {
+        console.error('Failed to load current balance:', error)
+      }
+    }
+
+    // If we have a Paystack reference, verify the payment first
+    if (paystackReference) {
+      handlePaystackCallback(paystackReference)
+    } else if (pendingReference) {
+      handlePaystackCallback(pendingReference)
+    } else {
+      syncBalance()
+    }
+  }, [location.search])
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('userName')
-    localStorage.removeItem('cardNumber')
-    localStorage.removeItem('balance')
-    localStorage.removeItem('user_email')
+    logoutUser()
     navigate('/')
   }
 
@@ -81,6 +93,12 @@ function Dashboard() {
           <div className="balance-amount">R {parseFloat(balance).toFixed(2)}</div>
           <button className="btn-load-funds" onClick={() => navigate('/load-funds')}>+Load Funds</button>
         </div>
+
+        {paymentStatus && (
+          <div className={`payment-status ${paymentStatus.includes('successful') ? 'status-success' : 'status-error'}`}>
+            {paymentStatus}
+          </div>
+        )}
       </div>
 
       <div className="bottom-nav">

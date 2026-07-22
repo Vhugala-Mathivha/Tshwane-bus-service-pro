@@ -1,15 +1,23 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-
-const transactions = [
-  { type: 'Load', date: '20 May 2024 ~ 10:15', amount: '+R16.00', status: 'success', positive: true },
-  { type: 'Trip', date: '20 May 2024 ~ 10:15', amount: '-R15.00', status: 'success', positive: false },
-  { type: 'Load', date: '20 May 2024 ~ 10:15', amount: '+R50.00', status: 'success', positive: true },
-  { type: 'Load', date: '20 May 2024 ~ 10:15', amount: '+R100.00', status: 'success', positive: true },
-  { type: 'Trip', date: '20 May 2024 ~ 10:15', amount: '-R50.00', status: 'success', positive: false },
-]
+import { formatDate, formatTransactionType, getTransactions } from '../services/api'
 
 function Transactions() {
+  const [transactions, setTransactions] = useState([])
+
+  useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        const response = await getTransactions()
+        setTransactions(response.transactions || [])
+      } catch (error) {
+        console.error('Unable to load transactions:', error)
+      }
+    }
+
+    loadTransactions()
+  }, [])
+
   return (
     <div className="dash-page">
       <div className="dash-container">
@@ -29,18 +37,20 @@ function Transactions() {
         </div>
 
         <div className="transactions-list">
-          {transactions.map((txn, index) => (
-            <div className="transaction-item" key={index}>
+          {transactions.map((txn) => (
+            <div className="transaction-item" key={txn.id}>
               <div className="txn-left">
-                <div className="txn-icon">{txn.positive ? '📥' : '📤'}</div>
+                <div className="txn-icon">{txn.type === 'Load' ? '📥' : '📤'}</div>
                 <div className="txn-info">
-                  <div className="txn-type">{txn.type === 'Load' ? 'Loaded Funds' : 'Bus Ride'}</div>
-                  <div className="txn-date">{txn.date}</div>
+                  <div className="txn-type">{formatTransactionType(txn.type)}</div>
+                  <div className="txn-date">{formatDate(txn.transactionDate)}</div>
                 </div>
               </div>
               <div className="txn-right">
-                <div className={`txn-amount ${txn.positive ? 'positive' : 'negative'}`}>{txn.amount}</div>
-                <div className="txn-status">{txn.status}</div>
+                <div className={`txn-amount ${txn.type === 'Load' ? 'positive' : 'negative'}`}>
+                  {`${txn.type === 'Load' ? '+' : '-'}R${Number(txn.amount).toFixed(2)}`}
+                </div>
+                <div className="txn-status">success</div>
               </div>
             </div>
           ))}

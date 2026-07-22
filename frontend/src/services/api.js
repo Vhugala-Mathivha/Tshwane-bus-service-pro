@@ -9,18 +9,15 @@
  */
 
 // Base URL for the C# ASP.NET backend API
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 /**
  * Helper function for making API requests
  */
 async function apiRequest(endpoint, options = {}) {
-  const token = localStorage.getItem('authToken');
-  
   const config = {
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     },
     ...options,
   };
@@ -28,14 +25,6 @@ async function apiRequest(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
-    // Handle 401 Unauthorized - redirect to login
-    if (response.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-      throw new Error('Session expired. Please login again.');
-    }
-
     const data = await response.json();
     
     if (!response.ok) {
@@ -57,9 +46,9 @@ async function apiRequest(endpoint, options = {}) {
 
 /**
  * POST /api/auth/login
- * Authenticate user and return JWT token
+ * Authenticate user with email and password
  * Body: { email, password }
- * Response: { token, user: { id, fullName, email } }
+ * Response: { userId, fullName, email, cardNumber, balance }
  */
 export async function loginUser(email, password) {
   const data = await apiRequest('/auth/login', {
@@ -67,37 +56,55 @@ export async function loginUser(email, password) {
     body: JSON.stringify({ email, password }),
   });
   
-  // Store auth data
-  localStorage.setItem('authToken', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
-  localStorage.setItem('userName', data.user.fullName);
+  // Store auth data (backend returns: userId, fullName, email, cardNumber, balance)
+  localStorage.setItem('user', JSON.stringify({ 
+    id: data.userId, 
+    fullName: data.fullName, 
+    email: data.email 
+  }));
+  localStorage.setItem('userName', data.fullName);
+  localStorage.setItem('user_email', data.email);
+  localStorage.setItem('isLoggedIn', 'true');
+  if (data.cardNumber) {
+    localStorage.setItem('cardNumber', data.cardNumber);
+    localStorage.setItem('user_card_number', data.cardNumber);
+  }
+  if (typeof data.balance !== 'undefined') {
+    localStorage.setItem('balance', data.balance);
+    localStorage.setItem('user_balance', data.balance);
+  }
   
   return data;
 }
 
 /**
- * POST /api/auth/register
- * Register a new user and create a BusCard
- * Body: { fullName, email, cardNumber, password }
- * Response: { token, user: { id, fullName, email }, busCard: { id, cardNumber, balance } }
+ * POST /api/SignUp/register
+ * Register (first-time setup) - verify existing user details and create password
+ * Body: { fullName, email, cardNumber, password, confirmPassword }
+ * Response: { message, email }
  */
 export async function registerUser(userData) {
-  const data = await apiRequest('/auth/register', {
+  const data = await apiRequest('/SignUp/register', {
     method: 'POST',
     body: JSON.stringify({
       fullName: userData.fullName,
       email: userData.email,
       cardNumber: userData.cardNumber,
       password: userData.password,
+      confirmPassword: userData.confirmPassword,
     }),
   });
   
-  // Store auth data
-  localStorage.setItem('authToken', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
-  localStorage.setItem('userName', data.user.fullName);
-  localStorage.setItem('cardNumber', data.busCard.cardNumber);
-  localStorage.setItem('balance', data.busCard.balance);
+  // Store user info in localStorage so they're logged in after registration
+  localStorage.setItem('user', JSON.stringify({ 
+    fullName: userData.fullName, 
+    email: data.email 
+  }));
+  localStorage.setItem('userName', userData.fullName);
+  localStorage.setItem('user_email', data.email);
+  localStorage.setItem('cardNumber', userData.cardNumber);
+  localStorage.setItem('user_card_number', userData.cardNumber);
+  localStorage.setItem('isLoggedIn', 'true');
   
   return data;
 }
@@ -116,32 +123,64 @@ export async function getUserProfile() {
 }
 
 // ============================================================
+// PAYSTACK PAYMENT ENDPOINTS
+// ============================================================
+
+/**
+ * POST /api/payment/initialize
+ * Initialize a Paystack payment transaction
+ * Body: { email, amount, cardNumber }
+ * Response: { status, authorization_url, reference }
+ */
+export async function initializePaystackPayment(email, amount, cardNumber) {
+  return apiRequest('/payment/initialize', {
+    method: 'POST',
+    body: JSON.stringify({ email, amount, cardNumber }),
+  });
+}
+
+/**
+ * GET /api/payment/verify/{reference}
+ * Verify a Paystack payment and update the database balance
+ * Response: { status, newBalance, cardNumber, amount }
+ */
+export async function verifyPaystackPayment(reference) {
+  return apiRequest(`/payment/verify/${reference}`);
+}
+
+// ============================================================
 // BUS CARD ENDPOINTS
 // ============================================================
 
 /**
- * GET /api/card/balance
+ * GET /api/card/balance?email=user@example.com
  * Get the current user's bus card balance
- * Response: { id, cardNumber, balance }
+ * Response: { cardNumber, balance }
  */
 export async function getCardBalance() {
-  return apiRequest('/card/balance');
+  const email = localStorage.getItem('user_email');
+  if (!email) throw new Error('User not logged in.');
+  return apiRequest(`/card/balance?email=${encodeURIComponent(email)}`);
 }
 
 /**
  * POST /api/card/load-funds
  * Load funds onto the user's bus card
- * Body: { amount }
- * Response: { id, cardNumber, balance, transaction: { id, amount, type, transactionDate } }
+ * Body: { email, amount }
+ * Response: { message, balance, cardNumber }
  */
 export async function loadFunds(amount) {
+  const email = localStorage.getItem('user_email');
+  if (!email) throw new Error('User not logged in.');
+  
   const data = await apiRequest('/card/load-funds', {
     method: 'POST',
-    body: JSON.stringify({ amount }),
+    body: JSON.stringify({ email, amount }),
   });
   
   // Update stored balance
   localStorage.setItem('balance', data.balance);
+  localStorage.setItem('user_balance', data.balance);
   
   return data;
 }
@@ -176,28 +215,30 @@ export function getStoredUser() {
  * Get stored user name for greeting
  */
 export function getUserName() {
-  return localStorage.getItem('userName') || 'User';
+  const storedUser = getStoredUser();
+  return localStorage.getItem('userName') || storedUser?.fullName || 'User';
 }
 
 /**
  * Get stored card balance
  */
 export function getStoredBalance() {
-  return localStorage.getItem('balance') || '250.00';
+  return localStorage.getItem('balance') || localStorage.getItem('user_balance') || '250.00';
 }
 
 /**
  * Get stored card number
  */
 export function getStoredCardNumber() {
-  return localStorage.getItem('cardNumber') || '';
+  return localStorage.getItem('cardNumber') || localStorage.getItem('user_card_number') || '';
 }
 
 /**
  * Check if user is authenticated
+ * Uses isLoggedIn flag since the backend doesn't use JWT tokens
  */
 export function isAuthenticated() {
-  return !!localStorage.getItem('authToken');
+  return !!localStorage.getItem('isLoggedIn');
 }
 
 /**
@@ -207,8 +248,12 @@ export function logoutUser() {
   localStorage.removeItem('authToken');
   localStorage.removeItem('user');
   localStorage.removeItem('userName');
+  localStorage.removeItem('user_email');
   localStorage.removeItem('cardNumber');
+  localStorage.removeItem('user_card_number');
   localStorage.removeItem('balance');
+  localStorage.removeItem('user_balance');
+  localStorage.removeItem('isLoggedIn');
 }
 
 /**

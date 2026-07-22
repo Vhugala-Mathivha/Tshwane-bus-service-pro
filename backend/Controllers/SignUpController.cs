@@ -33,15 +33,18 @@ public class SignUpController(
         if (!user.Email.Trim().Equals(request.Email.Trim(), StringComparison.OrdinalIgnoreCase))
             return BadRequest(new { message = "Email does not match our records." });
 
+        if (!user.FullName.Trim().Equals(request.FullName.Trim(), StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Full name does not match our records." });
+
+        // Check if user is already registered (password already set)
+        if (!string.IsNullOrEmpty(user.PasswordHash))
+            return BadRequest(new { message = "This user is already registered. Please login." });
+
         // Hash password and Save
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
         dbContext.Users.Update(user);
         await dbContext.SaveChangesAsync();
 
-        // Send OTP
-        string otpCode = otpService.GenerateOtp(user.Email);
-        await emailService.SendOtpEmailAsync(user.Email, otpCode);
-
-        return Ok(new { message = "Registration successful. OTP sent.", email = user.Email });
+        return Ok(new { message = "Registration successful.", email = user.Email });
     }
 }

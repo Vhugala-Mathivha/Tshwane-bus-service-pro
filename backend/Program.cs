@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using backend.Data;
+using backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); // Basic Swagger setup
+
+// Register application services
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<OtpService>();
+builder.Services.AddScoped<EmailServices>();
 
 // DB Connection - PUT YOUR MYSQL PASSWORD HERE
 var connectionString = "server=localhost;port=3306;database=tshwane_bus_db;user=root;password=";

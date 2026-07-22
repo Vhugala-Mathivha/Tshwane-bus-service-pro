@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { loginUser } from '../services/api'
 
 function Login() {
   const navigate = useNavigate()
@@ -23,13 +24,15 @@ function Login() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
-    localStorage.setItem('authToken', 'demo-token')
-    localStorage.setItem('userName', 'User')
-    localStorage.setItem('balance', '250.00')
-    navigate('/dashboard')
+    try {
+      await loginUser(email, password)
+      navigate('/dashboard')
+    } catch (error) {
+      setErrors((prev) => ({ ...prev, general: error.message }))
+    }
   }
 
   return (
@@ -76,6 +79,8 @@ function Login() {
             />
             {errors.password && <div className="error-message">{errors.password}</div>}
           </div>
+
+          {errors.general && <div className="error-message">{errors.general}</div>}
 
           <Link to="#forgot" className="forgot-link">
             Forgot Password?
