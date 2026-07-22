@@ -114,12 +114,14 @@ export async function registerUser(userData) {
 // ============================================================
 
 /**
- * GET /api/user/profile
- * Get the current user's profile
+ * GET /api/user/profile?email=user@example.com
+ * Get the current user's profile (includes createdAt date)
  * Response: { id, fullName, email, createdAt }
  */
 export async function getUserProfile() {
-  return apiRequest('/user/profile');
+  const email = localStorage.getItem('user_email');
+  if (!email) throw new Error('User not logged in.');
+  return apiRequest(`/user/profile?email=${encodeURIComponent(email)}`);
 }
 
 // ============================================================
@@ -190,13 +192,14 @@ export async function loadFunds(amount) {
 // ============================================================
 
 /**
- * GET /api/transactions
+ * GET /api/transactions?email=user@example.com&page=1&limit=20
  * Get all transactions for the current user's bus card
- * Query params: ?page=1&limit=20
- * Response: { transactions: [{ id, busCardId, amount, type, transactionDate, description }], total, page, limit }
+ * Response: { transactions: [{ id, cardNumber, amount, type, transactionDate, description }], total, page, limit }
  */
 export async function getTransactions(page = 1, limit = 20) {
-  return apiRequest(`/transactions?page=${page}&limit=${limit}`);
+  const email = localStorage.getItem('user_email');
+  if (!email) throw new Error('User not logged in.');
+  return apiRequest(`/transactions?email=${encodeURIComponent(email)}&page=${page}&limit=${limit}`);
 }
 
 // ============================================================

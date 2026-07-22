@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getCardBalance, getStoredCardNumber, getStoredUser, logoutUser } from '../services/api'
+import { getCardBalance, getStoredCardNumber, getStoredUser, getUserProfile, logoutUser } from '../services/api'
 
 function Profile() {
   const navigate = useNavigate()
@@ -9,10 +9,20 @@ function Profile() {
   const [email, setEmail] = useState(storedUser?.email || localStorage.getItem('user_email') || 'User@gmail.com')
   const [balance, setBalance] = useState(localStorage.getItem('balance') || '250.00')
   const [cardNumber, setCardNumber] = useState(getStoredCardNumber() || '255588773327')
+  const [dateJoined, setDateJoined] = useState('')
 
   useEffect(() => {
     const syncProfile = async () => {
       try {
+        // Fetch user profile with createdAt date
+        const profile = await getUserProfile()
+        if (profile.createdAt) {
+          const joinedDate = new Date(profile.createdAt)
+          const options = { day: 'numeric', month: 'long', year: 'numeric' }
+          setDateJoined(joinedDate.toLocaleDateString('en-US', options))
+        }
+        
+        // Fetch balance and card info
         const balanceResponse = await getCardBalance()
         setBalance(balanceResponse.balance.toString())
         setCardNumber(balanceResponse.cardNumber)
@@ -23,7 +33,7 @@ function Profile() {
         localStorage.setItem('cardNumber', balanceResponse.cardNumber)
         localStorage.setItem('user_card_number', balanceResponse.cardNumber)
       } catch (error) {
-        console.error('Unable to sync profile balance:', error)
+        console.error('Unable to sync profile:', error)
       }
     }
 
@@ -90,7 +100,7 @@ function Profile() {
           </div>
           <div className="info-item">
             <span className="info-label">Date Joined</span>
-            <span className="info-value">20 May 2026</span>
+            <span className="info-value">{dateJoined || 'Loading...'}</span>
           </div>
         </div>
       </div>
