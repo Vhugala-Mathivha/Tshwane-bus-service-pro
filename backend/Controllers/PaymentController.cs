@@ -45,7 +45,7 @@ public class PaymentController : ControllerBase {
 
         if (result != null && result.GetProperty("data").GetProperty("status").GetString() == "success") {
             var data = result.GetProperty("data");
-            string cardNumber = data.GetProperty("metadata").GetProperty("card_number").GetString();
+            string cardNumber = data.GetProperty("metadata").GetProperty("card_number").GetString()!;
             decimal amount = data.GetProperty("amount").GetDecimal() / 100;
 
             // UPDATE DATABASE

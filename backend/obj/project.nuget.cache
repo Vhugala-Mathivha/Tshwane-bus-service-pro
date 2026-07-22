@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "uzvKrXzis4g=",
+  "dgSpecHash": "C750vhdJ+Hc=",
   "success": true,
   "projectFilePath": "C:\\Users\\241540952\\Documents\\Tshwane-bus-service-pro\\backend\\backend.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\241540952\\.nuget\\packages\\bcrypt.net-next\\4.2.0\\bcrypt.net-next.4.2.0.nupkg.sha512",
     "C:\\Users\\241540952\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.10\\microsoft.aspnetcore.openapi.9.0.10.nupkg.sha512",
     "C:\\Users\\241540952\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.0\\microsoft.entityframeworkcore.9.0.0.nupkg.sha512",
     "C:\\Users\\241540952\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.0\\microsoft.entityframeworkcore.abstractions.9.0.0.nupkg.sha512",
