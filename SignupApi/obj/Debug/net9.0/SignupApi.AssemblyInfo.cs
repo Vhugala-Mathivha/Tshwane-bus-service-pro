@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SignupApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d65b685069dd6086fb5dc724173ddc666df96bf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c8ee9d678d0d94b0cc83227b2743dd7291610c33")]
 [assembly: System.Reflection.AssemblyProductAttribute("SignupApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SignupApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
