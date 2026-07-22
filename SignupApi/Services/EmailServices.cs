@@ -1,5 +1,6 @@
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 
 namespace SignupApi.Services;
 
@@ -7,33 +8,35 @@ public class EmailServices(IConfiguration configuration)
 {
     public async Task SendOtpEmailAsync(string toEmail, string otpCode)
     {
-        // Read SMTP settings from appsettings.json
         string smtpServer = configuration["EmailSettings:SmtpServer"] ?? "smtp.gmail.com";
         int smtpPort = int.Parse(configuration["EmailSettings:SmtpPort"] ?? "587");
         string senderEmail = configuration["EmailSettings:SenderEmail"] ?? "";
-        string senderPassword = configuration["EmailSettings:SenderPassword"] ?? "";
+        string senderPassword = configuration["EmailSettings:SenderPassword"]?.Replace(" ", "") ?? "";
 
-        var mailMessage = new MailMessage
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress("Tshwane Bus Service", senderEmail));
+        message.To.Add(new MailboxAddress("", toEmail));
+        message.Subject = $"{otpCode} is your Tshwane Bus Service OTP";
+
+        var bodyBuilder = new BodyBuilder
         {
-            From = new MailAddress(senderEmail, "Tshwane Bus Service"),
-            Subject = "Your Registration OTP Code",
-            Body = $"""
-                <h2>Tshwane Bus Service Registration</h2>
-                <p>Your One-Time Password (OTP) for account verification is:</p>
-                <h1 style="color: #0056b3;">{otpCode}</h1>
-                <p>This code is valid for <strong>5 minutes</strong>. Do not share this code with anyone.</p>
-                """,
-            IsBodyHtml = true,
+            HtmlBody = $"""
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                    <h2 style="color: #0056b3;">Tshwane Bus Service Registration</h2>
+                    <p>Your One-Time Password (OTP) for account verification is:</p>
+                    <h1 style="color: #0056b3; letter-spacing: 4px;">{otpCode}</h1>
+                    <p>This code is valid for <strong>5 minutes</strong>.</p>
+                </div>
+                """
         };
+        message.Body = bodyBuilder.ToMessageBody();
 
-        mailMessage.To.Add(toEmail);
-
-        using var client = new SmtpClient(smtpServer, smtpPort)
-        {
-            Credentials = new NetworkCredential(senderEmail, senderPassword),
-            EnableSsl = true
-        };
-
-        await client.SendMailAsync(mailMessage);
+        using var client = new SmtpClient();
+        
+        // Connect using StartTls on Port 587
+        await client.ConnectAsync(smtpServer, smtpPort, SecureSocketOptions.StartTls);
+        await client.AuthenticateAsync(senderEmail, senderPassword);
+        await client.SendAsync(message);
+        await client.DisconnectAsync(true);
     }
 }
