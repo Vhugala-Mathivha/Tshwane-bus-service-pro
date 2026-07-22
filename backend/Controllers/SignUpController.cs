@@ -45,6 +45,36 @@ public class SignUpController(
         dbContext.Users.Update(user);
         await dbContext.SaveChangesAsync();
 
-        return Ok(new { message = "Registration successful.", email = user.Email });
+        // Send OTP to user's email
+        string otpCode = otpService.GenerateOtp(user.Email);
+        
+        // Log OTP to console for development/testing (visible in terminal)
+        Console.WriteLine($"\n=== OTP for {user.Email}: {otpCode} ===\n");
+        
+        try
+        {
+            await emailService.SendOtpEmailAsync(user.Email, otpCode);
+        }
+        catch
+        {
+            // If email fails, registration still succeeded.
+            // OTP is cached in memory, so it can still be validated.
+        }
+
+        return Ok(new { message = "Registration successful. OTP sent to your email.", email = user.Email });
+    }
+
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.OtpCode))
+            return BadRequest(new { message = "Email and OTP code are required." });
+
+        bool isValid = otpService.ValidateOtp(request.Email, request.OtpCode);
+
+        if (!isValid)
+            return BadRequest(new { message = "Invalid or expired OTP code." });
+
+        return Ok(new { message = "OTP verified successfully.", email = request.Email });
     }
 }

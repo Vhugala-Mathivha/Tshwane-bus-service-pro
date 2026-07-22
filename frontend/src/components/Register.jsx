@@ -73,7 +73,7 @@ function Register() {
     if (!validateForm()) return
     try {
       await registerUser(formData)
-      navigate('/dashboard')
+      navigate('/verify')
     } catch (error) {
       setErrors((prev) => ({ ...prev, general: error.message }))
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { getCardBalance, initializePaystackPayment } from '../services/api'
+import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, VisaIcon, MastercardIcon, BackIcon } from './Icons'
 
 function LoadFunds() {
   const navigate = useNavigate()
@@ -118,9 +119,8 @@ function LoadFunds() {
             <div className="card-payment-section">
               <span className="card-payment-label">Card Payment</span>
               <div className="card-payment-icons">
-                <span>💳</span>
-                <span>💳</span>
-                <span>💳</span>
+                <VisaIcon />
+                <MastercardIcon />
               </div>
             </div>
 
@@ -133,23 +133,23 @@ function LoadFunds() {
 
       <div className="bottom-nav">
         <Link to="/dashboard" className="nav-item active">
-          <span className="nav-icon">🏠</span>
+          <span className="nav-icon"><HomeIcon active={true} /></span>
           <span className="nav-label">Home</span>
         </Link>
         <Link to="/transactions" className="nav-item">
-          <span className="nav-icon">📋</span>
+          <span className="nav-icon"><TransactionsIcon /></span>
           <span className="nav-label">Transactions</span>
         </Link>
         <Link to="#tap" className="nav-item" onClick={(e) => e.preventDefault()}>
-          <span className="nav-icon">📱</span>
+          <span className="nav-icon"><TapToPayIcon /></span>
           <span className="nav-label">Tap to pay</span>
         </Link>
-        <Link to="#card" className="nav-item" onClick={(e) => e.preventDefault()}>
-          <span className="nav-icon">💳</span>
+        <Link to="/card" className="nav-item">
+          <span className="nav-icon"><CardIcon /></span>
           <span className="nav-label">Card</span>
         </Link>
-        <Link to="#profile" className="nav-item" onClick={(e) => e.preventDefault()}>
-          <span className="nav-icon">👤</span>
+        <Link to="/profile" className="nav-item">
+          <span className="nav-icon"><ProfileIcon /></span>
           <span className="nav-label">Profile</span>
         </Link>
       </div>

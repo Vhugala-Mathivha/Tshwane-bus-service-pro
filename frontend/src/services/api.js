@@ -25,10 +25,19 @@ async function apiRequest(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
-    const data = await response.json();
+    // Handle empty response body
+    const text = await response.text();
+    let data = {};
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { message: text };
+      }
+    }
     
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'An error occurred');
+      throw new Error(data.message || data.error || `Request failed with status ${response.status}`);
     }
     
     return data;
@@ -107,6 +116,19 @@ export async function registerUser(userData) {
   localStorage.setItem('isLoggedIn', 'true');
   
   return data;
+}
+
+/**
+ * POST /api/SignUp/verify-otp
+ * Verify the OTP code sent to the user's email
+ * Body: { email, otpCode }
+ * Response: { message, email }
+ */
+export async function verifyOtp(email, otpCode) {
+  return apiRequest('/SignUp/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, otpCode }),
+  });
 }
 
 // ============================================================

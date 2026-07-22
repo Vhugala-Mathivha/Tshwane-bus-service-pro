@@ -29,7 +29,7 @@ function Verify() {
           </div>
 
           <button className="btn-green" onClick={() => navigate('/otp')} style={{ marginTop: '12px' }}>
-            Register
+            Enter OTP
           </button>
         </div>
 

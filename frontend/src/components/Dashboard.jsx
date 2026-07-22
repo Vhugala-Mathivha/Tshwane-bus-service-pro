@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { getCardBalance, getUserName, logoutUser, verifyPaystackPayment } from '../services/api'
+import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, LoadFundsIcon } from './Icons'
 
 function getTimeOfDayGreeting() {
   const currentHour = new Date().getHours()
@@ -91,7 +92,9 @@ function Dashboard() {
         <div className="balance-card">
           <div className="balance-label">Your Balance</div>
           <div className="balance-amount">R {parseFloat(balance).toFixed(2)}</div>
-          <button className="btn-load-funds" onClick={() => navigate('/load-funds')}>+Load Funds</button>
+          <button className="btn-load-funds" onClick={() => navigate('/load-funds')}>
+            <LoadFundsIcon /> Load Funds
+          </button>
         </div>
 
         {paymentStatus && (
@@ -103,23 +106,23 @@ function Dashboard() {
 
       <div className="bottom-nav">
         <Link to="/dashboard" className="nav-item active">
-          <span className="nav-icon">🏠</span>
+          <span className="nav-icon"><HomeIcon active={true} /></span>
           <span className="nav-label">Home</span>
         </Link>
         <Link to="/transactions" className="nav-item">
-          <span className="nav-icon">📋</span>
+          <span className="nav-icon"><TransactionsIcon /></span>
           <span className="nav-label">Transactions</span>
         </Link>
         <Link to="/tap-to-pay" className="nav-item">
-          <span className="nav-icon">📱</span>
+          <span className="nav-icon"><TapToPayIcon /></span>
           <span className="nav-label">Tap to pay</span>
         </Link>
         <Link to="/card" className="nav-item">
-          <span className="nav-icon">💳</span>
+          <span className="nav-icon"><CardIcon /></span>
           <span className="nav-label">Card</span>
         </Link>
         <Link to="/profile" className="nav-item">
-          <span className="nav-icon">👤</span>
+          <span className="nav-icon"><ProfileIcon /></span>
           <span className="nav-label">Profile</span>
         </Link>
       </div>
