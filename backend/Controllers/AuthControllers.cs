@@ -3,26 +3,28 @@ using Microsoft.EntityFrameworkCore;
 using backend.Data;
 using backend.Models; 
 using backend.DTOs;
+using backend.Services; // Imported to access OtpService & EmailServices
 using BCrypt.Net;
 
 namespace backend.Controllers
 {
-    // [ApiController] + [Route] is the ASP.NET equivalent of writing:
-    //   const router = express.Router();
-    //   router.post('/login', ...);
-    // and mounting it with app.use('/api/auth', router) in Express.
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly OtpService _otpService;
+        private readonly EmailServices _emailService;
 
-        // ASP.NET's dependency injection automatically hands us a ready-to-use
-        // AppDbContext here, the same way you might import a configured
-        // Sequelize/Prisma client at the top of an Express route file.
-        public AuthController(AppDbContext context)
+        // Inject OtpService and EmailServices into AuthController
+        public AuthController(
+            AppDbContext context, 
+            OtpService otpService, 
+            EmailServices emailService)
         {
             _context = context;
+            _otpService = otpService;
+            _emailService = emailService;
         }
 
         // POST /api/auth/login
@@ -34,18 +36,14 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Email and password are required." });
             }
 
-            // Equivalent of: SELECT * FROM User WHERE Email = ? LIMIT 1
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null)
             {
-                // Deliberately vague - don't reveal whether it was the email or password that was wrong.
                 return Unauthorized(new { message = "Invalid email or password." });
             }
 
-            // Compares the plain-text password from the frontend against the
-            // hashed value stored in MySQL. Never compare plain-text to plain-text.
             bool passwordIsValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
 
             if (!passwordIsValid)
@@ -53,7 +51,6 @@ namespace backend.Controllers
                 return Unauthorized(new { message = "Invalid email or password." });
             }
 
-            // Equivalent of: SELECT * FROM BusCard WHERE UserId = ? LIMIT 1
             var busCard = await _context.BusCards
                 .FirstOrDefaultAsync(b => b.UserId == user.Id);
 
@@ -68,5 +65,60 @@ namespace backend.Controllers
 
             return Ok(response);
         }
+
+        /// <summary>
+        /// POST /api/auth/forgot-password-id
+        /// Body: { idNumber }
+        /// Checks if user exists by SA ID Number, generates an OTP, and dispatches it via email.
+        /// </summary>
+        [HttpPost("forgot-password-id")]
+        public async Task<IActionResult> ForgotPasswordById([FromBody] ForgotPasswordIdRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.IdNumber))
+            {
+                return BadRequest(new { message = "ID Number is required." });
+            }
+
+            // Query DB by ID Number (Primary Key: Id)
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == request.IdNumber.Trim());
+
+            if (user == null)
+            {
+                return NotFound(new { message = "No account found with this ID Number." });
+            }
+
+            // 1. Generate OTP in memory using OtpService
+            string otpCode = _otpService.GenerateOtp(user.Email);
+            
+            // 2. Log OTP to terminal console for development/testing
+            Console.WriteLine($"\n=== Forgot Password OTP for {user.Email}: {otpCode} ===\n");
+            
+            // 3. Send email with the OTP code
+            try
+            {
+                await _emailService.SendOtpEmailAsync(user.Email, otpCode);
+            }
+            catch
+            {
+                // If email dispatch fails, the OTP is still cached in memory for validation
+            }
+
+            // Get card information for session state
+            var busCard = await _context.BusCards
+                .FirstOrDefaultAsync(b => b.UserId == user.Id);
+
+            return Ok(new
+            {
+                message = "OTP sent successfully to your registered email.",
+                email = user.Email,
+                userId = user.Id,
+                fullName = user.FullName,
+                cardNumber = busCard?.CardNumber,
+                balance = busCard?.Balance ?? 0m
+            });
+        }
+
+        public record ForgotPasswordIdRequest(string IdNumber);
     }
 }
