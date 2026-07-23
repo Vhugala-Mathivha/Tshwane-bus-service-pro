@@ -1,0 +1,15 @@
+
+> tshwane-bus-service-frontend@1.0.0 dev
+> vite --host 127.0.0.1 --port 5173
+
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m534[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m1:05:35 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m1:09:31 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Login.jsx[22m
+[2m1:09:31 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Login.jsx[22m
+[2m1:10:04 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Register.jsx[22m
+[2m1:31:34 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.jsx[22m
+[2m1:32:08 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Dashboard.jsx[22m
+[2m2:06:18 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/Landing.jsx[22m
