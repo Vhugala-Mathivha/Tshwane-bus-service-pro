@@ -1,26 +1,41 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { sendForgotPasswordOtpById } from '../services/api'
 
 function ForgotPassword() {
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
+  const navigate = useNavigate()
+  const [idNumber, setIdNumber] = useState('')
+  const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
   const validateForm = () => {
     const newErrors = {}
-    if (!email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email'
+    if (!idNumber.trim()) {
+      newErrors.idNumber = 'ID Number is required'
+    } else if (idNumber.trim().length !== 13 || !/^\d+$/.test(idNumber.trim())) {
+      newErrors.idNumber = 'Please enter a valid 13-digit SA ID number'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
-    setSubmitted(true)
+
+    setLoading(true)
+    setErrors({})
+
+    try {
+      await sendForgotPasswordOtpById(idNumber.trim())
+      
+      // Navigate to OTP verification page
+      navigate('/verify')
+    } catch (error) {
+      setErrors({ general: error.message || 'No account found with this ID Number.' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,52 +46,38 @@ function ForgotPassword() {
         </div>
 
         <div className="auth-header">
-          <h1>Reset</h1>
-          <p>Forgot Password?</p>
+          <h1>Forgot Password</h1>
+          <p>Enter your ID Number to continue</p>
         </div>
 
-        {submitted ? (
-          <div className="success-section">
-            <div className="success-icon">✓</div>
-            <p>
-              Instructions have been sent to <strong>{email}</strong>.
-            </p>
-            <p className="success-desc">Please check your email to reset your password.</p>
+        <form onSubmit={handleSubmit} noValidate className="auth-form">
+          <div className="form-group">
+            <label htmlFor="idNumber">ID Number</label>
+            <input
+              id="idNumber"
+              type="text"
+              maxLength={13}
+              placeholder="e.g. 9501015000088"
+              value={idNumber}
+              onChange={(e) => {
+                setIdNumber(e.target.value)
+                if (errors.idNumber) setErrors({ ...errors, idNumber: '' })
+              }}
+              className={`form-input ${errors.idNumber ? 'input-error' : ''}`}
+            />
+            {errors.idNumber && <div className="error-message">{errors.idNumber}</div>}
           </div>
-        ) : (
-          <>
-            <p className="otp-sub">
-              No worries! Enter your Email address and we'll send
-              instructions to reset your password.
-            </p>
 
-            <form onSubmit={handleSubmit} noValidate className="auth-form">
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                    if (errors.email) setErrors({ ...errors, email: '' })
-                  }}
-                  className={`form-input ${errors.email ? 'input-error' : ''}`}
-                />
-                {errors.email && <div className="error-message">{errors.email}</div>}
-              </div>
+          {errors.general && <div className="error-message" style={{ marginBottom: '12px' }}>{errors.general}</div>}
 
-              <button type="submit" className="btn-green">
-                Send Instructions
-              </button>
-            </form>
-          </>
-        )}
+          <button type="submit" className="btn-green" disabled={loading}>
+            {loading ? 'Verifying...' : 'Continue'}
+          </button>
+        </form>
 
         <div className="auth-footer">
           <p>
-            Remember your password?{' '}
+            Remembered your password?{' '}
             <Link to="/login" className="auth-link">Sign in</Link>
           </p>
         </div>

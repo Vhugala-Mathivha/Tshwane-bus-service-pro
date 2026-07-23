@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getCardBalance, getStoredUser, logoutUser } from '../services/api'
+import { getCardBalance, getStoredUser, logoutUser, payFare } from '../services/api'
 import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, CheckIcon } from './Icons'
 
 // NOTE: There is no backend endpoint to record a trip/fare deduction yet
@@ -38,22 +38,21 @@ function TapToPay() {
     return num.replace(/(.{4})/g, '$1 ').trim()
   }
 
-  const handleTapToPay = () => {
+  // --- UPDATED ASYNC PAYMENT HANDLER ---
+  const handleTapToPay = async () => {
     setIsPaying(true)
 
-    setTimeout(() => {
-      const currentBalance = parseFloat(localStorage.getItem('balance') || balance)
-      if (currentBalance >= fare) {
-        const newBalance = currentBalance - fare
-        localStorage.setItem('balance', newBalance.toString())
-        setBalance(newBalance.toString())
-        setPaid(true)
-        setIsPaying(false)
-      } else {
-        alert('Insufficient balance. Please load funds.')
-        setIsPaying(false)
-      }
-    }, 2000)
+    try {
+      // Call backend to update DB balance and record transaction
+      const response = await payFare(fare)
+      
+      setBalance(response.balance.toString())
+      setPaid(true)
+    } catch (error) {
+      alert(error.message || 'Payment failed. Please try again.')
+    } finally {
+      setIsPaying(false)
+    }
   }
 
   const handleLogout = () => {

@@ -5,6 +5,7 @@ import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, Deposi
 
 function Transactions() {
   const [transactions, setTransactions] = useState([])
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     const loadTransactions = async () => {
@@ -18,6 +19,9 @@ function Transactions() {
 
     loadTransactions()
   }, [])
+
+  // Limit to 5 transactions unless showAll is toggled to true
+  const displayedTransactions = showAll ? transactions : transactions.slice(0, 5)
 
   return (
     <div className="dash-page">
@@ -34,13 +38,12 @@ function Transactions() {
         <div className="transactions-header">
           <div className="transactions-title-row">
             <h1>Transaction History</h1>
-            <Link to="#view-more" className="view-more" onClick={(e) => e.preventDefault()}>View More {'>'}</Link>
           </div>
           <p className="transactions-month">This month</p>
         </div>
 
         <div className="transactions-list">
-          {transactions.map((txn) => (
+          {displayedTransactions.map((txn) => (
             <div className="transaction-item" key={txn.id}>
               <div className="txn-left">
                 <div className="txn-icon">{txn.type === 'Load' ? <DepositIcon /> : <WithdrawIcon />}</div>
@@ -58,6 +61,20 @@ function Transactions() {
             </div>
           ))}
         </div>
+
+        {/* View More / Show Less Button placed at the bottom */}
+        {transactions.length > 5 && (
+          <div style={{ textAlign: 'center', marginTop: '16px', marginBottom: '16px' }}>
+            <button
+              type="button"
+              className="view-more"
+              onClick={() => setShowAll((prev) => !prev)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' }}
+            >
+              {showAll ? 'Show Less ^' : 'View More >'}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="bottom-nav">

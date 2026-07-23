@@ -200,8 +200,25 @@ export async function verifyPaystackPayment(reference) {
 // TAP TO PAY ENDPOINTS
 // ============================================================
 /**
- * POST /api/payment/
+ * POST /api/card/pay-fare
+ * Body: { email, amount }
+ * Response: { message, balance, cardNumber }
  */
+export async function payFare(amount) {
+  const email = localStorage.getItem('user_email');
+  if (!email) throw new Error('User not logged in.');
+
+  const data = await apiRequest('/card/pay-fare', {
+    method: 'POST',
+    body: JSON.stringify({ email, amount }),
+  });
+
+  if (typeof data.balance !== 'undefined') {
+    localStorage.setItem('balance', data.balance.toString());
+  }
+
+  return data;
+}
 // ============================================================
 // TRANSACTION ENDPOINTS
 // ============================================================
@@ -266,4 +283,25 @@ export function formatDate(dateStr) {
   const date = new Date(dateStr);
   const options = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
   return date.toLocaleDateString('en-US', options).replace(',', ' ~');
+}
+
+/**
+ * POST /api/auth/forgot-password-id
+ * Body: { idNumber }
+ * Response: { message, email, userId, fullName, cardNumber, balance }
+ */
+export async function sendForgotPasswordOtpById(idNumber) {
+  const data = await apiRequest('/auth/forgot-password-id', {
+    method: 'POST',
+    body: JSON.stringify({ idNumber }),
+  });
+
+  // Store user info in localStorage (matches your registration logic)
+  if (data.email) localStorage.setItem('user_email', data.email);
+  if (data.fullName) localStorage.setItem('userName', data.fullName);
+  if (data.userId) localStorage.setItem('userId', data.userId);
+  if (data.cardNumber) localStorage.setItem('cardNumber', data.cardNumber);
+  if (typeof data.balance !== 'undefined') localStorage.setItem('balance', data.balance.toString());
+
+  return data;
 }

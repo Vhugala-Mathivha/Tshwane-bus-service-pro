@@ -35,16 +35,21 @@ function OtpInput() {
 
     const email = localStorage.getItem('user_email')
     if (!email) {
-      setError('User email not found. Please register again.')
+      setError('User details not found. Please try again.')
       return
     }
 
     setLoading(true)
     try {
       await verifyOtp(email, otpCode)
-      navigate('/success')
-    } catch (error) {
-      setError(error.message || 'Invalid or expired OTP code.')
+
+      // Set session as logged in
+      localStorage.setItem('isLoggedIn', 'true')
+
+      // Redirect straight to dashboard
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Invalid or expired OTP code.')
     } finally {
       setLoading(false)
     }
@@ -60,7 +65,7 @@ function OtpInput() {
         <div className="auth-header">
           <h1>Verify</h1>
           <p>Verify your account</p>
-          <p className="otp-sub">Enter the One Time Password (OTP) sent to your email.</p>
+          <p className="otp-sub">Enter the One Time Password (OTP) sent to your registered email.</p>
         </div>
 
         <div className="auth-form">
@@ -82,7 +87,7 @@ function OtpInput() {
           {error && <div className="error-message" style={{ textAlign: 'center', marginBottom: '12px' }}>{error}</div>}
 
           <div className="otp-resend">
-            Didnt recieve an OTP? <a href="#resend" onClick={(e) => e.preventDefault()}>Resend OTP</a>
+            Didn't receive an OTP? <a href="#resend" onClick={(e) => e.preventDefault()}>Resend OTP</a>
           </div>
 
           <button className="btn-green" onClick={handleVerify} disabled={loading}>
