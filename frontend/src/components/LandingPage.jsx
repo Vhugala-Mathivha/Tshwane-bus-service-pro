@@ -51,7 +51,7 @@ function FeatureIcon({ name }) {
 function Logo() {
   return (
     <div className="tbs-logo">
-      <img src="/Logo.jpeg" alt="City of Tshwane" />
+      <img src="/ctlogo.jpeg" alt="City of Tshwane" />
     </div>
   );
 }

@@ -48,22 +48,25 @@ function TapToPay() {
 
     setIsScanning(true)
 
-    try {
-      const email = localStorage.getItem('user_email')
-      const result = await processTapToPayPayment(email, 15.00)
-      
-      setIsScanning(false)
-      setPaymentSuccess(true)
-      setPaymentDetails(result)
-      
-      // Update local balance
-      setBalance(result.newBalance.toString())
-      localStorage.setItem('balance', result.newBalance.toString())
-      localStorage.setItem('user_balance', result.newBalance.toString())
-    } catch (error) {
-      setIsScanning(false)
-      alert('Payment failed: ' + error.message)
-    }
+    // Simulate tapping animation for 1.5 seconds
+    setTimeout(async () => {
+      try {
+        const email = localStorage.getItem('user_email')
+        const result = await processTapToPayPayment(email, 15.00)
+        
+        setIsScanning(false)
+        setPaymentSuccess(true)
+        setPaymentDetails(result)
+        
+        // Update local balance
+        setBalance(result.newBalance.toString())
+        localStorage.setItem('balance', result.newBalance.toString())
+        localStorage.setItem('user_balance', result.newBalance.toString())
+      } catch (error) {
+        setIsScanning(false)
+        alert('Payment failed: ' + error.message)
+      }
+    }, 1500)
   }
 
   const handleDone = () => {
@@ -171,43 +174,39 @@ function TapToPay() {
           <button onClick={handleLogout} className="dash-logout-btn">Logout</button>
         </div>
 
-        {/* Bus Card - same design as Card page */}
-        <div className="card-display">
-          <div className="physical-card">
-            <div className="card-top">
-              <span className="card-number">{formatCardNumber(cardNumber)}</span>
-            </div>
-            <div className="card-bottom">
-              <div className="card-holder">
-                <span className="card-label">Card Holder</span>
-                <span className="card-value">{userName}</span>
-              </div>
-              <div className="card-expiry">
-                <span className="card-label">Valid Thru</span>
-                <span className="card-value">05/30</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="tap-to-pay-content">
           <h1>Tap to Pay</h1>
 
-          <div className="tap-nfc-icon">
-            <TapToPayIcon active={isScanning} />
+          {/* Bus Card - same design as Card page */}
+          <div className="card-display">
+            <div className="physical-card">
+              <div className="card-top">
+                <span className="card-number">{formatCardNumber(cardNumber)}</span>
+              </div>
+              <div className="card-bottom">
+                <div className="card-holder">
+                  <span className="card-label">Card Holder</span>
+                  <span className="card-value">{userName}</span>
+                </div>
+                <div className="card-expiry">
+                  <span className="card-label">Valid Thru</span>
+                  <span className="card-value">05/30</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="payment-amount">
-            <span>Fare: R15.00</span>
+          <div className={`tap-nfc-icon${isScanning ? ' scanning' : ''}`} onClick={handleTapToPay} style={{ cursor: isScanning ? 'default' : 'pointer' }}>
+            <TapToPayIcon active={isScanning} />
           </div>
 
           <div className="tap-balance">
             Current Balance: R {parseFloat(balance).toFixed(2)}
           </div>
 
-          <button className="btn-green" onClick={handleTapToPay} disabled={isScanning}>
-            {isScanning ? 'Processing...' : 'Complete Payment'}
-          </button>
+          <div className="tap-hint">
+            {isScanning ? 'Processing payment...' : 'Tap the NFC icon above to pay'}
+          </div>
         </div>
       </div>
 

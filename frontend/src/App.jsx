@@ -12,6 +12,10 @@ import Profile from './components/Profile'
 import Transactions from './components/Transactions'
 import LoadFunds from './components/LoadFunds'
 import TapToPay from './components/TapToPay'
+import ForgotPassword from './components/ForgotPassword'
+import ForgotPasswordOtp from './components/ForgotPasswordOtp'
+import ResetPassword from './components/ResetPassword'
+import BusMap from './components/BusMap'
 
 function App() {
   return (
@@ -28,6 +32,10 @@ function App() {
       <Route path="/transactions" element={<Transactions />} />
       <Route path="/load-funds" element={<LoadFunds />} />
       <Route path="/tap-to-pay" element={<TapToPay />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/forgot-password-otp" element={<ForgotPasswordOtp />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/find-stations" element={<BusMap />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

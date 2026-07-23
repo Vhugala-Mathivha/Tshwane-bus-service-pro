@@ -82,7 +82,7 @@ function Login() {
 
           {errors.general && <div className="error-message">{errors.general}</div>}
 
-          <Link to="#forgot" className="forgot-link">
+          <Link to="/forgot-password" className="forgot-link">
             Forgot Password?
           </Link>
 

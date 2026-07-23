@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { getCardBalance, getUserName, logoutUser, verifyPaystackPayment } from '../services/api'
-import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, LoadFundsIcon } from './Icons'
+import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, LoadFundsIcon, FindStationsIcon, BusTimetableIcon } from './Icons'
 
 function getTimeOfDayGreeting() {
   const currentHour = new Date().getHours()
@@ -18,6 +18,7 @@ function Dashboard() {
   const [balance, setBalance] = useState(localStorage.getItem('balance') || '0.00')
   const [userName] = useState(getUserName())
   const [paymentStatus, setPaymentStatus] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
 
   useEffect(() => {
     // Check if this is a redirect from Paystack
@@ -26,6 +27,13 @@ function Dashboard() {
     const pendingReference = localStorage.getItem('pending_payment_reference')
 
     const handlePaystackCallback = async (reference) => {
+      // Prevent duplicate verification
+      if (isVerifying) {
+        return
+      }
+      
+      setIsVerifying(true)
+      
       try {
         const result = await verifyPaystackPayment(reference)
         if (result.status === 'Success') {
@@ -40,6 +48,7 @@ function Dashboard() {
         setPaymentStatus('Payment verification failed. Please contact support.')
       } finally {
         localStorage.removeItem('pending_payment_reference')
+        setIsVerifying(false)
         // Clean up the URL query params
         window.history.replaceState({}, document.title, '/dashboard')
       }
@@ -64,9 +73,11 @@ function Dashboard() {
     } else if (pendingReference) {
       handlePaystackCallback(pendingReference)
     } else {
+      // Clear any old payment status messages when loading dashboard normally
+      setPaymentStatus('')
       syncBalance()
     }
-  }, [location.search])
+  }, [location.search, isVerifying])
 
   const handleLogout = () => {
     logoutUser()
@@ -102,6 +113,22 @@ function Dashboard() {
             {paymentStatus}
           </div>
         )}
+
+        <div className="quick-actions">
+          <h2>Quick Actions</h2>
+          <div className="actions-grid">
+            <div className="action-card" onClick={() => navigate('/busmap')}>
+              <div className="action-icon"><FindStationsIcon /></div>
+              <div className="action-title">Find Stations</div>
+              <div className="action-desc">find stations near you</div>
+            </div>
+            <div className="action-card" onClick={() => window.open('https://www.tshwane.gov.za/?page_id=723', '_blank')}>
+              <div className="action-icon"><BusTimetableIcon /></div>
+              <div className="action-title">Bus Timetables</div>
+              <div className="action-desc">see bus schedules</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="bottom-nav">

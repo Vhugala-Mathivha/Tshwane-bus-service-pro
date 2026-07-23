@@ -67,3 +67,21 @@ export const NotificationIcon = () => (
 export const WalletIcon = () => (
   <img src="/17.jpg" alt="Wallet" className="icon-md" />
 )
+
+export const FindStationsIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#228B22" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <path d="M21 21l-4.35-4.35"/>
+    <path d="M11 8v6"/>
+    <path d="M8 11h6"/>
+  </svg>
+)
+
+export const BusTimetableIcon = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#228B22" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+    <line x1="3" y1="9" x2="21" y2="9"/>
+    <line x1="9" y1="21" x2="9" y2="9"/>
+    <polyline points="14,13 16,15 20,11"/>
+  </svg>
+)

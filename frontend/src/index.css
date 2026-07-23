@@ -986,7 +986,7 @@ body {
 }
 
 .nav-icon {
-  font-size: 26px;
+  font-size:32px;
   line-height: 1;
 }
 
@@ -1007,13 +1007,24 @@ body {
 }
 
 .nav-icon-img {
-  width: 26px;
+  width: 32px;
   height: 26px;
   object-fit: contain;
 }
 
 .nav-icon-img.active {
   filter: none;
+}
+
+/* Enlarge Tap to Pay icon in bottom nav - raised higher like PDF */
+.nav-item:nth-child(3) {
+  position: relative;
+}
+
+.nav-item:nth-child(3) .nav-icon-img {
+  width: 46px;
+  height: 46px;
+  margin-top: -18px;
 }
 
 .icon-sm {
@@ -1600,12 +1611,82 @@ body {
 .tap-nfc-icon {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-bottom: 24px;
+  position: relative;
+  width: 100%;
+  min-height: 80px;
 }
 
 .tap-nfc-icon .nav-icon-img {
-  width: 64px;
-  height: 64px;
+  width: 120px;
+  height: 120px;
+  position: relative;
+  z-index: 2;
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.tap-nfc-icon:not(.scanning):hover .nav-icon-img {
+  transform: scale(1.1);
+}
+
+.tap-nfc-icon.scanning .nav-icon-img {
+  animation: nfc-tap 0.4s ease-in-out 3;
+}
+
+@keyframes nfc-tap {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+  }
+  25% {
+    transform: scale(0.92);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 20px rgba(46, 204, 113, 0);
+  }
+  75% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+  }
+}
+
+.tap-nfc-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  background: rgba(46, 204, 113, 0.1);
+  z-index: 1;
+  opacity: 0;
+}
+
+.tap-nfc-icon.scanning::before {
+  animation: nfc-ripple 1.5s ease-out infinite;
+}
+
+@keyframes nfc-ripple {
+  0% {
+    width: 120px;
+    height: 120px;
+    margin: -60px 0 0 -60px;
+    opacity: 0.6;
+  }
+  100% {
+    width: 260px;
+    height: 260px;
+    margin: -130px 0 0 -130px;
+    opacity: 0;
+  }
 }
 
 .payment-amount {
@@ -1624,10 +1705,18 @@ body {
 
 .tap-balance {
   text-align: center;
-  font-size: 14px;
-  color: #666;
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.tap-hint {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
   margin-bottom: 24px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 /* Payment Receipt */

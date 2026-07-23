@@ -283,6 +283,49 @@ export function isAuthenticated() {
   return !!localStorage.getItem('isLoggedIn');
 }
 
+// ============================================================
+// FORGOT PASSWORD ENDPOINTS
+// ============================================================
+
+/**
+ * POST /api/ForgotPassword/lookup-id
+ * Look up user by ID number and send OTP to email
+ * Body: { idNumber }
+ * Response: { message, email }
+ */
+export async function forgotPasswordLookup(idNumber) {
+  return apiRequest('/ForgotPassword/lookup-id', {
+    method: 'POST',
+    body: JSON.stringify({ idNumber }),
+  });
+}
+
+/**
+ * POST /api/ForgotPassword/verify-otp
+ * Verify OTP for password reset
+ * Body: { email, otpCode }
+ * Response: { message, email }
+ */
+export async function verifyForgotPasswordOtp(email, otpCode) {
+  return apiRequest('/ForgotPassword/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ email, otpCode }),
+  });
+}
+
+/**
+ * POST /api/ForgotPassword/reset-password
+ * Reset password after OTP verification
+ * Body: { email, password, confirmPassword }
+ * Response: { message }
+ */
+export async function resetPassword(email, password, confirmPassword) {
+  return apiRequest('/ForgotPassword/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, confirmPassword }),
+  });
+}
+
 /**
  * Logout - clear stored auth data
  */

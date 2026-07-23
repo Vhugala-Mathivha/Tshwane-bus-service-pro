@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<BusCard> BusCards => Set<BusCard>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<PaystackPayment> PaystackPayments => Set<PaystackPayment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,6 +57,15 @@ public class AppDbContext : DbContext
             entity.HasOne(t => t.BusCard)
                   .WithMany(b => b.Transactions)
                   .HasForeignKey(t => t.CardNumber);
+        });
+        // --- PaystackPayment table ---
+        modelBuilder.Entity<PaystackPayment>(entity =>
+        {
+            entity.ToTable("PaystackPayment");
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Reference).HasColumnType("varchar(255)");
+            entity.Property(p => p.CardNumber).HasColumnType("varchar(255)");
+            entity.HasIndex(p => p.Reference).IsUnique();
         });
     }
 }

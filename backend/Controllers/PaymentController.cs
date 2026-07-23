@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Data;
 using backend.Models;
+using backend.DTOs;
 using System.Net.Http.Headers;
 
 namespace backend.Controllers;
@@ -27,7 +28,8 @@ public class PaymentController : ControllerBase {
         var paystackData = new {
             email = request.Email,
             amount = (int)(request.Amount * 100), // Paystack uses Cents/Kobo
-            callback_url = "http://localhost:3002/dashboard", 
+            callback_url = "http://localhost:3004/dashboard", 
+            cancel_url = "http://localhost:3004/dashboard",
             metadata = new { 
                 card_number = request.CardNumber,
                 user_email = request.Email
@@ -59,6 +61,25 @@ public class PaymentController : ControllerBase {
 
     [HttpGet("verify/{reference}")]
     public async Task<IActionResult> Verify(string reference) {
+        // Check if this reference has already been processed (idempotency check)
+        var existingPayment = await _context.PaystackPayments
+            .FirstOrDefaultAsync(p => p.Reference == reference);
+
+        if (existingPayment != null && existingPayment.Processed)
+        {
+            // Already processed, return the result without duplicating
+            var existingCard = await _context.BusCards
+                .FirstOrDefaultAsync(c => c.CardNumber == existingPayment.CardNumber);
+            
+            return Ok(new { 
+                status = "Success", 
+                newBalance = existingCard?.Balance ?? 0,
+                cardNumber = existingPayment.CardNumber,
+                amount = existingPayment.Amount,
+                message = "Payment already processed."
+            });
+        }
+
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _paystackSecret);
 
@@ -83,15 +104,34 @@ public class PaymentController : ControllerBase {
                 if (card != null)
                 {
                     card.Balance += amount;
+
+                    // Record the transaction
                     _context.Transactions.Add(new Transaction
                     {
-                        
                         CardNumber = cardNumber,
                         Amount = amount,
                         Type = TransactionType.Load,
                         TransactionDate = DateTime.Now,
                         Description = "Top-up via Paystack"
                     });
+
+                    // Record the Paystack reference to prevent duplicate processing
+                    if (existingPayment == null)
+                    {
+                        _context.PaystackPayments.Add(new PaystackPayment
+                        {
+                            Reference = reference,
+                            CardNumber = cardNumber,
+                            Amount = amount,
+                            Processed = true,
+                            ProcessedAt = DateTime.Now
+                        });
+                    }
+                    else
+                    {
+                        existingPayment.Processed = true;
+                    }
+
                     await _context.SaveChangesAsync();
 
                     return Ok(new { 
@@ -108,5 +148,3 @@ public class PaymentController : ControllerBase {
         return BadRequest(new { message = "Payment verification failed." });
     }
 }
-
-public record TopUpRequest(string Email, decimal Amount, string CardNumber);

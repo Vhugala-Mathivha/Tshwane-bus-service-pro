@@ -6,7 +6,7 @@ import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, VisaIc
 function LoadFunds() {
   const navigate = useNavigate()
   const [selectedAmount, setSelectedAmount] = useState('')
-  const [customAmount, setCustomAmount] = useState('R 0.00')
+  const [customAmount, setCustomAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const amounts = ['R 10.00', 'R 20.00', 'R 50.00', 'R 100.00']
   
@@ -118,10 +118,7 @@ function LoadFunds() {
 
             <div className="card-payment-section">
               <span className="card-payment-label">Card Payment</span>
-              <div className="card-payment-icons">
-                <VisaIcon />
-                <MastercardIcon />
-              </div>
+              
             </div>
 
             <button className="btn-green" onClick={handlePayNow}>

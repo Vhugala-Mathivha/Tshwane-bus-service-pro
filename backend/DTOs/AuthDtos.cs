@@ -28,3 +28,9 @@ public class VerifyOtpRequest {
     public string Email { get; set; } = string.Empty;
     public string OtpCode { get; set; } = string.Empty;
 }
+
+public class TopUpRequest {
+    public string Email { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public string CardNumber { get; set; } = string.Empty;
+}
