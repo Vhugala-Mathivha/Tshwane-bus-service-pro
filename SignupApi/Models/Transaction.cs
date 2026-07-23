@@ -12,7 +12,7 @@ public class Transaction
 
     [Required]
     [StringLength(20)]
-    public string CardNumber { get; set; } = string.Empty; // FK referencing BusCard(CardNumber)
+    public string CardNumber { get; set; } = string.Empty;
 
     [Column(TypeName = "decimal(10, 2)")]
     public decimal Amount { get; set; }
@@ -26,7 +26,7 @@ public class Transaction
     [StringLength(255)]
     public string? Description { get; set; }
 
-    // Navigation property back to BusCard
+    // Navigation property
     [ForeignKey(nameof(CardNumber))]
     public BusCard? BusCard { get; set; }
 }
