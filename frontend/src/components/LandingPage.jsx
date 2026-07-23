@@ -101,8 +101,8 @@ export default function LandingPage() {
         <Logo />
         <nav className="tbs-nav-links">
           <a href="#home" className="is-active">Home</a>
-          <a href="https://www.tshwane.gov.za/?page_id=719">About</a>
-          <a href="https://www.tshwane.gov.za/?page_id=953">Help</a>
+          <a href="#about">About</a>
+          <a href="#help">Help</a>
         </nav>
         <button className="tbs-btn tbs-btn--solid" onClick={() => navigate("/login")}>Login</button>
       </header>
@@ -120,8 +120,8 @@ export default function LandingPage() {
               ease.
             </p>
             <div className="tbs-hero-actions">
-              <button className="tbs-btn tbs-btn--solid" onClick={() => navigate("/register")}>Get Started</button>
-              {/* <button className="tbs-btn tbs-btn--outline" onClick={() => navigate("/register")}>Register</button> */}
+              <button className="tbs-btn tbs-btn--solid" onClick={() => navigate("/login")}>Get Started</button>
+              <button className="tbs-btn tbs-btn--outline" onClick={() => navigate("/register")}>Register</button>
             </div>
           </div>
           <div className="tbs-hero-art">

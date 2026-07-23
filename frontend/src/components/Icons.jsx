@@ -28,8 +28,12 @@ export const LogoutIcon = () => (
   <img src="/7.jpg" alt="Logout" className="icon-sm" />
 )
 
+// No dedicated "plus" icon exists in the image set — inline SVG instead,
+// styled with currentColor so it inherits whatever color its container uses.
 export const LoadFundsIcon = () => (
-  <img src="/8.jpg" alt="Load Funds" className="icon-md" />
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
 )
 
 export const CheckIcon = () => (
@@ -48,16 +52,18 @@ export const BusIcon = () => (
   <img src="/12.jpg" alt="Bus" className="icon-md" />
 )
 
+// Deposit (Load) = wallet icon, per user confirmation
 export const DepositIcon = () => (
-  <img src="/13.jpg" alt="Deposit" className="icon-md" />
+  <img src="/15.jpg" alt="Deposit" className="icon-md" />
 )
 
+// Withdraw (Trip fare) = bus icon, per user confirmation
 export const WithdrawIcon = () => (
-  <img src="/14.jpg" alt="Withdraw" className="icon-md" />
+  <img src="/13.jpg" alt="Trip" className="icon-md" />
 )
 
 export const EditIcon = () => (
-  <img src="/15.jpg" alt="Edit" className="icon-sm" />
+  <img src="/16.jpg" alt="Edit" className="icon-sm" />
 )
 
 export const NotificationIcon = () => (
@@ -65,5 +71,5 @@ export const NotificationIcon = () => (
 )
 
 export const WalletIcon = () => (
-  <img src="/17.jpg" alt="Wallet" className="icon-md" />
+  <img src="/15.jpg" alt="Wallet" className="icon-md" />
 )

@@ -7,6 +7,7 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
 
   const validateForm = () => {
     const newErrors = {}
@@ -27,11 +28,14 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
+    setLoading(true)
     try {
       await loginUser(email, password)
       navigate('/dashboard')
     } catch (error) {
       setErrors((prev) => ({ ...prev, general: error.message }))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -82,12 +86,12 @@ function Login() {
 
           {errors.general && <div className="error-message">{errors.general}</div>}
 
-          <Link to="#forgot" className="forgot-link">
+          <Link to="/forgot-password" className="forgot-link">
             Forgot Password?
           </Link>
 
-          <button type="submit" className="btn-green">
-            Sign in
+          <button type="submit" className="btn-green" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 

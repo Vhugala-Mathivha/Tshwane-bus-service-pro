@@ -12,6 +12,8 @@ import Profile from './components/Profile'
 import Transactions from './components/Transactions'
 import LoadFunds from './components/LoadFunds'
 import TapToPay from './components/TapToPay'
+import ForgotPassword from './components/ForgotPassword'
+import PaymentSuccess from './components/PaymentSuccess'
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
       <Route path="/transactions" element={<Transactions />} />
       <Route path="/load-funds" element={<LoadFunds />} />
       <Route path="/tap-to-pay" element={<TapToPay />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

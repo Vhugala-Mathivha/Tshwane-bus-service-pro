@@ -13,14 +13,12 @@ function getTimeOfDayGreeting() {
 function Dashboard() {
   const navigate = useNavigate()
   const location = useLocation()
-  
-  // Logic: Initialize from localStorage, but update via State
+
   const [balance, setBalance] = useState(localStorage.getItem('balance') || '0.00')
   const [userName] = useState(getUserName())
   const [paymentStatus, setPaymentStatus] = useState('')
 
   useEffect(() => {
-    // Check if this is a redirect from Paystack
     const queryParams = new URLSearchParams(location.search)
     const paystackReference = queryParams.get('reference') || queryParams.get('trxref')
     const pendingReference = localStorage.getItem('pending_payment_reference')
@@ -29,20 +27,34 @@ function Dashboard() {
       try {
         const result = await verifyPaystackPayment(reference)
         if (result.status === 'Success') {
-          // Update balance with the new balance from the server
-          setBalance(result.newBalance.toString())
           localStorage.setItem('balance', result.newBalance.toString())
-          localStorage.setItem('user_balance', result.newBalance.toString())
-          setPaymentStatus('Payment successful! Funds have been loaded.')
+          localStorage.setItem('cardNumber', result.cardNumber)
+          localStorage.removeItem('pending_payment_reference')
+          window.history.replaceState({}, document.title, '/dashboard')
+
+          const now = new Date()
+          const dateStr = now.toLocaleDateString('en-US', {
+            day: 'numeric', month: 'long', year: 'numeric',
+          }) + '  *  ' + now.toLocaleTimeString('en-US', {
+            hour: '2-digit', minute: '2-digit', hour12: false,
+          })
+
+          navigate('/payment-success', {
+            state: {
+              amount: parseFloat(result.amount).toFixed(2),
+              method: 'Paystack',
+              reference,
+              date: dateStr,
+            },
+          })
+          return
         }
       } catch (error) {
         console.error('Payment verification failed:', error)
         setPaymentStatus('Payment verification failed. Please contact support.')
-      } finally {
-        localStorage.removeItem('pending_payment_reference')
-        // Clean up the URL query params
-        window.history.replaceState({}, document.title, '/dashboard')
       }
+      localStorage.removeItem('pending_payment_reference')
+      window.history.replaceState({}, document.title, '/dashboard')
     }
 
     const syncBalance = async () => {
@@ -50,15 +62,12 @@ function Dashboard() {
         const response = await getCardBalance()
         setBalance(response.balance.toString())
         localStorage.setItem('balance', response.balance.toString())
-        localStorage.setItem('user_balance', response.balance.toString())
         localStorage.setItem('cardNumber', response.cardNumber)
-        localStorage.setItem('user_card_number', response.cardNumber)
       } catch (error) {
         console.error('Failed to load current balance:', error)
       }
     }
 
-    // If we have a Paystack reference, verify the payment first
     if (paystackReference) {
       handlePaystackCallback(paystackReference)
     } else if (pendingReference) {
@@ -73,7 +82,6 @@ function Dashboard() {
     navigate('/')
   }
 
-  // --- NO CHANGES TO DESIGN BELOW THIS LINE ---
   return (
     <div className="dash-page">
       <div className="dash-container">
@@ -93,14 +101,12 @@ function Dashboard() {
           <div className="balance-label">Your Balance</div>
           <div className="balance-amount">R {parseFloat(balance).toFixed(2)}</div>
           <button className="btn-load-funds" onClick={() => navigate('/load-funds')}>
-            Load Funds
+            <LoadFundsIcon /> Load Funds
           </button>
         </div>
 
         {paymentStatus && (
-          <div className={`payment-status ${paymentStatus.includes('successful') ? 'status-success' : 'status-error'}`}>
-            {paymentStatus}
-          </div>
+          <div className="payment-status status-error">{paymentStatus}</div>
         )}
       </div>
 

@@ -13,6 +13,7 @@ function Register() {
     agreeTerms: false
   })
   const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -71,11 +72,14 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!validateForm()) return
+    setLoading(true)
     try {
       await registerUser(formData)
       navigate('/verify')
     } catch (error) {
       setErrors((prev) => ({ ...prev, general: error.message }))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -179,8 +183,8 @@ function Register() {
 
           {errors.general && <div className="error-message">{errors.general}</div>}
 
-          <button type="submit" className="btn-green">
-            Register
+          <button type="submit" className="btn-green" disabled={loading}>
+            {loading ? 'Registering...' : 'Register'}
           </button>
         </form>
 

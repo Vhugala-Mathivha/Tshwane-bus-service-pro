@@ -6,12 +6,11 @@ import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, VisaIc
 function LoadFunds() {
   const navigate = useNavigate()
   const [selectedAmount, setSelectedAmount] = useState('')
-  const [customAmount, setCustomAmount] = useState('R 0.00')
+  const [customAmount, setCustomAmount] = useState('') // 1. Initialise as empty string so it doesn't conflict
   const [loading, setLoading] = useState(false)
-  const amounts = ['R 10.00', 'R 20.00', 'R 50.00', 'R 100.00']
-  
-  // 1. Get real data from the user's login session
-  const [balance, setBalance] = useState(localStorage.getItem('user_balance') || localStorage.getItem('balance') || '0.00')
+  const amounts = ['R50', 'R100', 'R200', 'R500']
+
+  const [balance, setBalance] = useState(localStorage.getItem('balance') || '0.00')
 
   useEffect(() => {
     const syncBalance = async () => {
@@ -19,7 +18,6 @@ function LoadFunds() {
         const response = await getCardBalance()
         setBalance(response.balance.toString())
         localStorage.setItem('balance', response.balance.toString())
-        localStorage.setItem('user_balance', response.balance.toString())
       } catch (error) {
         console.error('Unable to load balance:', error)
       }
@@ -29,13 +27,12 @@ function LoadFunds() {
   }, [])
 
   const handlePayNow = async () => {
-    // 2. Calculate amount correctly
-    const amount = selectedAmount 
-      ? parseFloat(selectedAmount.replace('R', ''))
-      : parseFloat(customAmount.replace('R', '').trim())
+    // 2. Fallback check: Read either selected predefined value or the custom input value
+    const amountStr = selectedAmount || customAmount;
+    const amount = parseFloat(amountStr.replace('R', '').trim())
 
     if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid amount")
+      alert('Please enter a valid amount')
       return
     }
 
@@ -43,21 +40,18 @@ function LoadFunds() {
 
     try {
       const email = localStorage.getItem('user_email')
-      const cardNumber = localStorage.getItem('cardNumber') || localStorage.getItem('user_card_number')
-      
+      const cardNumber = localStorage.getItem('cardNumber')
+
       if (!email || !cardNumber) {
         alert('User information not found. Please login again.')
         navigate('/login')
         return
       }
 
-      // Initialize Paystack payment
       const response = await initializePaystackPayment(email, amount, cardNumber)
-      
+
       if (response.authorization_url) {
-        // Store the reference so we can verify after redirect
         localStorage.setItem('pending_payment_reference', response.reference)
-        // Redirect user to Paystack payment page
         window.location.href = response.authorization_url
       } else {
         alert('Failed to initialize payment. Please try again.')
@@ -77,14 +71,16 @@ function LoadFunds() {
           <div className="dash-logo">
             <img src="/Logo.jpeg" alt="Tshwane Bus Service" />
           </div>
-          <Link to="/dashboard" className="dash-back-btn">← Back</Link>
+          <Link to="/dashboard" className="dash-back-btn">
+            <BackIcon /> Back
+          </Link>
         </div>
 
         <div className="load-funds">
           <h1>Load Funds</h1>
 
           <div className="load-balance-card">
-            <div className="load-balance-label">Currrent Balance</div>
+            <div className="load-balance-label">Current Balance</div>
             <div className="load-balance-amount">R{parseFloat(balance).toFixed(2)}</div>
           </div>
 
@@ -95,7 +91,10 @@ function LoadFunds() {
                 <button
                   key={amt}
                   className={`amount-btn ${selectedAmount === amt ? 'active' : ''}`}
-                  onClick={() => setSelectedAmount(amt)}
+                  onClick={() => {
+                    setSelectedAmount(amt)
+                    setCustomAmount('') // 3. Clears custom input when predefined value is clicked
+                  }}
                 >
                   {amt}
                 </button>
@@ -103,14 +102,15 @@ function LoadFunds() {
             </div>
 
             <div className="other-amount">
-              <span className="other-amount-label">other Amount</span>
+              <span className="other-amount-label">Other Amount</span>
               <div className="custom-amount-input">
                 <input
                   type="text"
+                  placeholder="R 0.00" // 4. Added placeholder for a cleaner visual look
                   value={customAmount}
                   onChange={(e) => {
                     setCustomAmount(e.target.value)
-                    setSelectedAmount('')
+                    setSelectedAmount('') // 5. Deselects predefined buttons when typing custom value
                   }}
                 />
               </div>
@@ -124,8 +124,8 @@ function LoadFunds() {
               </div>
             </div>
 
-            <button className="btn-green" onClick={handlePayNow}>
-              Pay Now
+            <button className="btn-green" onClick={handlePayNow} disabled={loading}>
+              {loading ? 'Redirecting to Paystack...' : 'Pay Now'}
             </button>
           </div>
         </div>

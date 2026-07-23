@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCardBalance, getStoredCardNumber, getStoredUser } from '../services/api'
-import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon } from './Icons'
+import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon} from './Icons'
 
 function Card() {
   const storedUser = getStoredUser()
@@ -15,7 +15,6 @@ function Card() {
         setCardNumber(response.cardNumber)
         setUserName(storedUser?.fullName || localStorage.getItem('userName') || 'User')
         localStorage.setItem('cardNumber', response.cardNumber)
-        localStorage.setItem('user_card_number', response.cardNumber)
       } catch (error) {
         console.error('Unable to sync card details:', error)
       }
@@ -24,7 +23,6 @@ function Card() {
     syncCard()
   }, [])
 
-  // Format card number with spaces every 4 digits
   const formatCardNumber = (num) => {
     return num.replace(/(.{4})/g, '$1 ').trim()
   }
@@ -36,7 +34,9 @@ function Card() {
           <div className="dash-logo">
             <img src="/Logo.jpeg" alt="Tshwane Bus Service" />
           </div>
-          <Link to="/dashboard" className="dash-back-btn">← Back</Link>
+          <Link to="/dashboard" className="dash-back-btn">
+            Back
+          </Link>
         </div>
 
         <div className="card-display">

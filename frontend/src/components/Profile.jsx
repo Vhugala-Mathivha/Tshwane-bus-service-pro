@@ -6,34 +6,30 @@ import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon } from 
 function Profile() {
   const navigate = useNavigate()
   const storedUser = getStoredUser()
+  const [userId, setUserId] = useState(localStorage.getItem('userId'))
   const [userName, setUserName] = useState(storedUser?.fullName || localStorage.getItem('userName') || 'User')
-  const [userID, setUserID] = useState(storedUser?.id || localStorage.getItem('user_id') || '000131152084')
   const [email, setEmail] = useState(storedUser?.email || localStorage.getItem('user_email') || 'User@gmail.com')
-  const [balance, setBalance] = useState(localStorage.getItem('balance') || '250.00')
+  const [balance, setBalance] = useState(localStorage.getItem('balance') || '0.00')
   const [cardNumber, setCardNumber] = useState(getStoredCardNumber() || '255588773327')
   const [dateJoined, setDateJoined] = useState('')
 
   useEffect(() => {
     const syncProfile = async () => {
       try {
-        // Fetch user profile with createdAt date
         const profile = await getUserProfile()
         if (profile.createdAt) {
           const joinedDate = new Date(profile.createdAt)
           const options = { day: 'numeric', month: 'long', year: 'numeric' }
           setDateJoined(joinedDate.toLocaleDateString('en-US', options))
         }
-        
-        // Fetch balance and card info
+
         const balanceResponse = await getCardBalance()
         setBalance(balanceResponse.balance.toString())
         setCardNumber(balanceResponse.cardNumber)
         setUserName(storedUser?.fullName || localStorage.getItem('userName') || 'User')
         setEmail(storedUser?.email || localStorage.getItem('user_email') || 'User@gmail.com')
         localStorage.setItem('balance', balanceResponse.balance.toString())
-        localStorage.setItem('user_balance', balanceResponse.balance.toString())
         localStorage.setItem('cardNumber', balanceResponse.cardNumber)
-        localStorage.setItem('user_card_number', balanceResponse.cardNumber)
       } catch (error) {
         console.error('Unable to sync profile:', error)
       }
@@ -57,7 +53,6 @@ function Profile() {
           <button onClick={handleLogout} className="dash-logout-btn">Logout</button>
         </div>
 
-        {/* Profile Header */}
         <div className="profile-header">
           <div className="profile-avatar">U</div>
           <div className="profile-title">
@@ -66,7 +61,6 @@ function Profile() {
           </div>
         </div>
 
-        {/* Account Overview */}
         <div className="account-overview">
           <h3>Account overview</h3>
           <div className="overview-item">
@@ -79,11 +73,10 @@ function Profile() {
           </div>
         </div>
 
-        {/* Personal Information */}
         <div className="personal-info">
           <div className="section-header">
             <h3>Personal Information</h3>
-            <Link to="#edit" className="edit-link" onClick={(e) => e.preventDefault()}>Edit</Link>
+            {/* <Link to="#edit" className="edit-link" onClick={(e) => e.preventDefault()}>Edit</Link> */}
           </div>
           <div className="info-row">
             <span className="info-label">View and edit your details</span>
@@ -98,7 +91,7 @@ function Profile() {
           </div>
           <div className="info-item">
             <span className="info-label">ID Number</span>
-            <span className="info-value">{userID}</span>
+            <span className="info-value">{userId}</span>
           </div>
           <div className="info-item">
             <span className="info-label">Date Joined</span>

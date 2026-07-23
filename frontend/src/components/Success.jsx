@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CheckIcon, LogoutIcon } from './Icons'
 
 function Success() {
   const navigate = useNavigate()
@@ -9,10 +10,15 @@ function Success() {
       <div className="auth-card">
         <div className="auth-logo">
           <img src="/Logo.jpeg" alt="City of Tshwane" />
+          <div style={{ position: 'absolute', top: 18, right: 18 }}>
+            <button onClick={() => { localStorage.clear(); navigate('/'); }} className="dash-logout-btn" style={{ fontSize: '13px', padding: '6px 12px' }}>
+              Logout
+            </button>
+          </div>
         </div>
 
         <div className="success-section">
-          <div className="success-icon">✓</div>
+          <div className="success-icon"><CheckIcon /></div>
           <h1>Account created successfully!</h1>
           <p>Welcome to Tshwane Bus Service.</p>
           <p className="success-desc">you can now access all features and enjoy a seamless travel experience</p>
