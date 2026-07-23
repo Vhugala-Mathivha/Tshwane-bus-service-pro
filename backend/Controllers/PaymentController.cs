@@ -85,6 +85,7 @@ public class PaymentController : ControllerBase {
                     card.Balance += amount;
                     _context.Transactions.Add(new Transaction
                     {
+                        
                         CardNumber = cardNumber,
                         Amount = amount,
                         Type = TransactionType.Load,

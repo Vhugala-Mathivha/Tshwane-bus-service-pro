@@ -210,6 +210,23 @@ export async function loadFunds(amount) {
 }
 
 // ============================================================
+// TAP TO PAY ENDPOINTS
+// ============================================================
+
+/**
+ * POST /api/TapToPay/process-payment
+ * Process a tap-to-pay transaction (deduct fare from balance)
+ * Body: { email, amount }
+ * Response: { success, newBalance, transactionId, message }
+ */
+export async function processTapToPayPayment(email, amount) {
+  return apiRequest('/TapToPay/process-payment', {
+    method: 'POST',
+    body: JSON.stringify({ email, amount }),
+  });
+}
+
+// ============================================================
 // TRANSACTION ENDPOINTS
 // ============================================================
 

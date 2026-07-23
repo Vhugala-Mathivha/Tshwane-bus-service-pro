@@ -7,6 +7,7 @@ function Profile() {
   const navigate = useNavigate()
   const storedUser = getStoredUser()
   const [userName, setUserName] = useState(storedUser?.fullName || localStorage.getItem('userName') || 'User')
+  const [userID, setUserID] = useState(storedUser?.id || localStorage.getItem('user_id') || '000131152084')
   const [email, setEmail] = useState(storedUser?.email || localStorage.getItem('user_email') || 'User@gmail.com')
   const [balance, setBalance] = useState(localStorage.getItem('balance') || '250.00')
   const [cardNumber, setCardNumber] = useState(getStoredCardNumber() || '255588773327')
@@ -96,8 +97,8 @@ function Profile() {
             <span className="info-value">{email}</span>
           </div>
           <div className="info-item">
-            <span className="info-label">ID NUmberr</span>
-            <span className="info-value">000131152084</span>
+            <span className="info-label">ID Number</span>
+            <span className="info-value">{userID}</span>
           </div>
           <div className="info-item">
             <span className="info-label">Date Joined</span>
@@ -115,7 +116,7 @@ function Profile() {
           <span className="nav-icon"><TransactionsIcon /></span>
           <span className="nav-label">Transactions</span>
         </Link>
-        <Link to="#tap" className="nav-item" onClick={(e) => e.preventDefault()}>
+        <Link to="/tap-to-pay" className="nav-item">
           <span className="nav-icon"><TapToPayIcon /></span>
           <span className="nav-label">Tap to pay</span>
         </Link>

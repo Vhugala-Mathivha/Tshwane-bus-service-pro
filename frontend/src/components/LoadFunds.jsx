@@ -6,7 +6,7 @@ import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, VisaIc
 function LoadFunds() {
   const navigate = useNavigate()
   const [selectedAmount, setSelectedAmount] = useState('')
-  const [customAmount, setCustomAmount] = useState('R 150.00')
+  const [customAmount, setCustomAmount] = useState('R 0.00')
   const [loading, setLoading] = useState(false)
   const amounts = ['R 10.00', 'R 20.00', 'R 50.00', 'R 100.00']
   
@@ -140,7 +140,7 @@ function LoadFunds() {
           <span className="nav-icon"><TransactionsIcon /></span>
           <span className="nav-label">Transactions</span>
         </Link>
-        <Link to="#tap" className="nav-item" onClick={(e) => e.preventDefault()}>
+        <Link to="/tap-to-pay" className="nav-item">
           <span className="nav-icon"><TapToPayIcon /></span>
           <span className="nav-label">Tap to pay</span>
         </Link>

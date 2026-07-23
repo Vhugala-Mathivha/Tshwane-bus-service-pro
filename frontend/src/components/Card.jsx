@@ -67,7 +67,7 @@ function Card() {
           <span className="nav-icon"><TransactionsIcon /></span>
           <span className="nav-label">Transactions</span>
         </Link>
-        <Link to="#tap" className="nav-item" onClick={(e) => e.preventDefault()}>
+        <Link to="/tap-to-pay" className="nav-item">
           <span className="nav-icon"><TapToPayIcon /></span>
           <span className="nav-label">Tap to pay</span>
         </Link>

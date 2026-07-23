@@ -93,7 +93,7 @@ function Dashboard() {
           <div className="balance-label">Your Balance</div>
           <div className="balance-amount">R {parseFloat(balance).toFixed(2)}</div>
           <button className="btn-load-funds" onClick={() => navigate('/load-funds')}>
-            <LoadFundsIcon /> Load Funds
+            Load Funds
           </button>
         </div>
 

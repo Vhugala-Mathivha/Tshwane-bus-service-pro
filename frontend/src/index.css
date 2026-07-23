@@ -977,12 +977,12 @@ body {
   text-decoration: none;
   padding: 6px 12px;
   border-radius: 10px;
-  transition: all 0.2s ease;
+  transition: none;
   min-width: 60px;
 }
 
 .nav-item:hover {
-  background: #f0faf0;
+  background: transparent;
 }
 
 .nav-icon {
@@ -992,18 +992,18 @@ body {
 
 .nav-label {
   font-size: 12px;
-  color: #888;
-  font-weight: 600;
+  color: #333;
+  font-weight: 700;
   letter-spacing: 0.2px;
 }
 
 .nav-item.active .nav-label {
-  color: #228B22;
+  color: #000;
   font-weight: 800;
 }
 
 .nav-item.active .nav-icon {
-  transform: scale(1.1);
+  transform: none;
 }
 
 .nav-icon-img {
@@ -1013,7 +1013,7 @@ body {
 }
 
 .nav-icon-img.active {
-  filter: brightness(0) saturate(100%) invert(20%) sepia(90%) saturate(500%) hue-rotate(100deg);
+  filter: none;
 }
 
 .icon-sm {
@@ -1139,6 +1139,46 @@ body {
   color: #228B22;
   font-weight: 500;
   margin-top: 2px;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 40px 20px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+}
+
+.no-transactions p {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.no-transactions-sub {
+  font-size: 13px;
+  color: #888;
+  font-weight: 400;
 }
 
 /* ========== CARD PAGE ========== */
@@ -1543,4 +1583,103 @@ body {
   .otp-inputs {
     gap: 8px;
   }
+}
+
+/* ========== TAP TO PAY PAGE ========== */
+.tap-to-pay-content {
+  padding: 0 16px;
+}
+
+.tap-to-pay-content h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #1a1a2e;
+}
+
+.tap-nfc-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.tap-nfc-icon .nav-icon-img {
+  width: 64px;
+  height: 64px;
+}
+
+.payment-amount {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.payment-amount span {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #f0f2f5;
+  padding: 12px 32px;
+  border-radius: 30px;
+}
+
+.tap-balance {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+/* Payment Receipt */
+.payment-receipt {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.receipt-item:last-child {
+  border-bottom: none;
+}
+
+.receipt-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.receipt-value {
+  font-size: 14px;
+  color: #000;
+  font-weight: 600;
+  text-align: right;
+}
+
+.receipt-total {
+  background: #f0faf0;
+  margin: 0 -20px;
+  padding: 12px 20px;
+  border-radius: 0;
+  border-bottom: none;
+  border-top: 2px solid #228B22;
+}
+
+.receipt-total .receipt-label {
+  font-weight: 700;
+  color: #228B22;
+}
+
+.receipt-total .receipt-value {
+  font-size: 18px;
+  color: #228B22;
+  font-weight: 800;
 }
