@@ -83,7 +83,7 @@ function Profile() {
         <div className="personal-info">
           <div className="section-header">
             <h3>Personal Information</h3>
-            <Link to="#edit" className="edit-link" onClick={(e) => e.preventDefault()}>Edit</Link>
+            {/* <Link to="#edit" className="edit-link" onClick={(e) => e.preventDefault()}>Edit</Link> */}
           </div>
           <div className="info-row">
             <span className="info-label">View and edit your details</span>
