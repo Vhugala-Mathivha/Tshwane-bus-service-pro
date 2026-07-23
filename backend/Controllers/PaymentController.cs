@@ -78,35 +78,53 @@ public class PaymentController : ControllerBase {
                 string cardNumber = data.GetProperty("metadata").GetProperty("card_number").GetString()!;
                 decimal amount = data.GetProperty("amount").GetDecimal() / 100;
 
-                // UPDATE DATABASE: old balance + new amount
+                // 1. CHK IF TRANSACTION HAS ALREADY BEEN PROCESSED (THE FIX)
+                var existingTx = await _context.Transactions
+                    .FirstOrDefaultAsync(t => t.Description == $"Top-up via Paystack ({reference})");
+                
                 var card = await _context.BusCards.FirstOrDefaultAsync(c => c.CardNumber == cardNumber);
-                if (card != null)
+                if (card == null)
                 {
-                    card.Balance += amount;
-                    _context.Transactions.Add(new Transaction
-                    {
-                        
-                        CardNumber = cardNumber,
-                        Amount = amount,
-                        Type = TransactionType.Load,
-                        TransactionDate = DateTime.Now,
-                        Description = "Top-up via Paystack"
-                    });
-                    await _context.SaveChangesAsync();
+                    return BadRequest(new { message = "Card not found in database." });
+                }
 
+                if (existingTx != null)
+                {
+                    // This reference was already handled! Return the current state safely without doubling.
                     return Ok(new { 
                         status = "Success", 
                         newBalance = card.Balance,
                         cardNumber = card.CardNumber,
-                        amount = amount
+                        amount = amount,
+                        message = "Already processed previously."
                     });
                 }
-                return BadRequest(new { message = "Card not found in database." });
+
+                // 2. UPDATE DATABASE ONLY IF IT IS NEW
+                card.Balance += amount;
+                _context.Transactions.Add(new Transaction
+                {
+                    CardNumber = cardNumber,
+                    Amount = amount,
+                    Type = TransactionType.Load,
+                    TransactionDate = DateTime.Now,
+                    // Appending the reference string inside description helps track uniquely
+                    Description = $"Top-up via Paystack ({reference})" 
+                });
+                await _context.SaveChangesAsync();
+
+                return Ok(new { 
+                    status = "Success", 
+                    newBalance = card.Balance,
+                    cardNumber = card.CardNumber,
+                    amount = amount
+                });
             }
         }
 
         return BadRequest(new { message = "Payment verification failed." });
     }
+
 }
 
 public record TopUpRequest(string Email, decimal Amount, string CardNumber);
