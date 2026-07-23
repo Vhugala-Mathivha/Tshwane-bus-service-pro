@@ -1,0 +1,175 @@
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { getCardBalance, getUserName, logoutUser, verifyPaystackPayment } from '../services/api'
+import { useInactivityLogout } from '../hooks/useInactivityLogout'
+import { HomeIcon, TransactionsIcon, TapToPayIcon, CardIcon, ProfileIcon, LoadFundsIcon, FindStationsIcon, BusTimetableIcon } from './Icons'
+
+function getTimeOfDayGreeting() {
+  const currentHour = new Date().getHours()
+  if (currentHour < 12) return 'Good Morning'
+  if (currentHour < 18) return 'Good Afternoon'
+  return 'Good Evening'
+}
+
+function Dashboard() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // Activate inactivity logout (2 minutes)
+  useInactivityLogout()
+  
+  // Logic: Initialize from localStorage, but update via State
+  const [balance, setBalance] = useState(localStorage.getItem('balance') || '0.00')
+  const [userName] = useState(getUserName())
+  const [paymentStatus, setPaymentStatus] = useState('')
+  const [isVerifying, setIsVerifying] = useState(false)
+
+  useEffect(() => {
+    // Check if this is a redirect from Paystack
+    const queryParams = new URLSearchParams(location.search)
+    const paystackReference = queryParams.get('reference') || queryParams.get('trxref')
+    let pendingReference = localStorage.getItem('pending_payment_reference')
+
+    console.log('Dashboard loaded with reference:', paystackReference)
+    console.log('Pending reference in storage:', pendingReference)
+    console.log('URL search params:', location.search)
+
+    const handlePaystackCallback = async (reference) => {
+      // Prevent duplicate verification
+      if (isVerifying) {
+        console.log('Already verifying, skipping...')
+        return
+      }
+      
+      setIsVerifying(true)
+      console.log('Verifying payment with reference:', reference)
+      
+      try {
+        const result = await verifyPaystackPayment(reference)
+        console.log('Verification result:', result)
+        if (result.status === 'Success') {
+          // Update balance with the new balance from the server
+          setBalance(result.newBalance.toString())
+          localStorage.setItem('balance', result.newBalance.toString())
+          localStorage.setItem('user_balance', result.newBalance.toString())
+          setPaymentStatus('Payment successful! Funds have been loaded.')
+          console.log('Balance updated to:', result.newBalance)
+        } else {
+          console.log('Payment status not Success:', result.status)
+          setPaymentStatus('Payment verification failed. Status: ' + result.status)
+        }
+      } catch (error) {
+        console.error('Payment verification failed:', error)
+        setPaymentStatus('Payment verification failed. Please contact support.')
+      } finally {
+        localStorage.removeItem('pending_payment_reference')
+        setIsVerifying(false)
+        // Clean up the URL query params
+        window.history.replaceState({}, document.title, '/dashboard')
+      }
+    }
+
+    const syncBalance = async () => {
+      try {
+        const response = await getCardBalance()
+        setBalance(response.balance.toString())
+        localStorage.setItem('balance', response.balance.toString())
+        localStorage.setItem('user_balance', response.balance.toString())
+        localStorage.setItem('cardNumber', response.cardNumber)
+        localStorage.setItem('user_card_number', response.cardNumber)
+      } catch (error) {
+        console.error('Failed to load current balance:', error)
+      }
+    }
+
+    // Determine which reference to use for verification
+    const referenceToVerify = paystackReference || pendingReference
+    
+    if (referenceToVerify && !isVerifying) {
+      // Use URL reference first, fall back to localStorage
+      handlePaystackCallback(referenceToVerify)
+    } else {
+      // No reference to verify, just sync balance
+      syncBalance()
+    }
+  }, [location.search])
+
+  const handleLogout = () => {
+    logoutUser()
+    navigate('/')
+  }
+
+  // --- NO CHANGES TO DESIGN BELOW THIS LINE ---
+  return (
+    <div className="dash-page">
+      <div className="dash-container">
+        <div className="dash-top">
+          <div className="dash-logo">
+            <img src="/Logo.jpeg" alt="Tshwane Bus Service" />
+          </div>
+          <button onClick={handleLogout} className="dash-logout-btn">Logout</button>
+        </div>
+
+        <div className="dash-greeting">
+          <h1>{getTimeOfDayGreeting()}, {userName}!</h1>
+          <p>Here's what's happening with your account.</p>
+        </div>
+
+        <div className="balance-card">
+          <div className="balance-label">Your Balance</div>
+          <div className="balance-amount">R {parseFloat(balance).toFixed(2)}</div>
+          <button className="btn-load-funds" onClick={() => navigate('/load-funds')}>
+            Load Funds
+          </button>
+        </div>
+
+        {paymentStatus && (
+          <div className={`payment-status ${paymentStatus.includes('successful') ? 'status-success' : 'status-error'}`}>
+            {paymentStatus}
+          </div>
+        )}
+
+        <div className="quick-actions">
+          <h2>Quick Actions</h2>
+          <div className="actions-grid">
+            <div className="action-card" onClick={() => navigate('/busmap')}>
+              <div className="action-icon"><FindStationsIcon /></div>
+              <div className="action-title">Find Stations</div>
+              <div className="action-desc">find stations near you</div>
+            </div>
+            <div className="action-card" onClick={() => window.open('https://www.tshwane.gov.za/?page_id=723', '_blank')}>
+              <div className="action-icon"><BusTimetableIcon /></div>
+              <div className="action-title">Bus Timetables</div>
+              <div className="action-desc">see bus schedules</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bottom-nav">
+        <Link to="/dashboard" className="nav-item active">
+          <span className="nav-icon"><HomeIcon active={true} /></span>
+          <span className="nav-label">Home</span>
+        </Link>
+        <Link to="/transactions" className="nav-item">
+          <span className="nav-icon"><TransactionsIcon /></span>
+          <span className="nav-label">Transactions</span>
+        </Link>
+        <Link to="/tap-to-pay" className="nav-item">
+          <span className="nav-icon"><TapToPayIcon /></span>
+          <span className="nav-label">Tap to pay</span>
+        </Link>
+        <Link to="/card" className="nav-item">
+          <span className="nav-icon"><CardIcon /></span>
+          <span className="nav-label">Card</span>
+        </Link>
+        <Link to="/profile" className="nav-item">
+          <span className="nav-icon"><ProfileIcon /></span>
+          <span className="nav-label">Profile</span>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+export default Dashboard
